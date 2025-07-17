@@ -1,8 +1,9 @@
+// app/index.tsx
 import React, { useEffect, useState } from 'react'
 import { View, Text } from 'react-native'
 import { router } from 'expo-router'
 import { useAuth } from '@/hooks/useAuth'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { LoadingSpinner } from '@/components/common/informatic/LoadingSpinner'
 
 export default function IndexPage() {
   const [isInitializing, setIsInitializing] = useState(true)

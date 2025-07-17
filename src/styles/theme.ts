@@ -4,7 +4,7 @@ export const theme = {
   ...typography,
   colors: {
     // Primary - Food/Cooking inspired
-    primary: '#e7521cff', // Warm orange
+    primary: '#e7521cff', 
     primaryLight: '#FF8A65',
     primaryDark: '#E64A19',
 
@@ -38,6 +38,7 @@ export const theme = {
   spacing: {
     xs: 4,
     sm: 8,
+    m: 12,
     md: 16,
     lg: 24,
     xl: 32,

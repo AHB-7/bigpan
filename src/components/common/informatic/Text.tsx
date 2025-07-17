@@ -23,16 +23,13 @@ export const Text: React.FC<TextProps> = ({
   ...props
 }) => {
   const getTextStyle = (): TextStyle => {
-    // Start with the variant's base style
     const baseStyle = typography.scale[variant]
 
-    // Override fontFamily if weight is provided
     const finalStyle = {
       ...baseStyle,
       color,
     }
 
-    // Override font family if specific weight is provided
     if (weight) {
       finalStyle.fontFamily = typography.fonts.montserrat[weight]
     }

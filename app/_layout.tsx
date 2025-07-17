@@ -1,9 +1,11 @@
-// ✅ Correct - move font loading to _layout.tsx
 // app/_layout.tsx
 import { useFonts } from 'expo-font'
 import { Slot } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
+import { Alert } from 'react-native'
+import Toast from 'react-native-toast-message'
+import { configureAsyncHandlers } from '@/hooks/asyncFunction'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -20,6 +22,38 @@ export default function RootLayout() {
     'Montserrat-Bold': require('../assets/fonts/Montserrat-Bold.otf'),
   })
 
+  // Configure error and success handlers
+  useEffect(() => {
+    configureAsyncHandlers({
+      // Toast for success messages
+      toastSuccess: (message, options = {}) =>
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: message,
+          position: options.position || 'bottom',
+          visibilityTime: options.duration || 2000,
+        }),
+
+      // Toast for non-critical errors
+      toastError: (message, options = {}) =>
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: message,
+          position: options.position || 'top',
+          visibilityTime: options.duration || 3000,
+        }),
+
+      // Modal for critical errors
+      modalError: (title, message, actions = []) => {
+        const modalActions =
+          actions.length > 0 ? actions : [{ text: 'OK', style: 'default' }]
+        Alert.alert(title, message, modalActions)
+      },
+    })
+  }, [])
+
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync()
@@ -30,5 +64,10 @@ export default function RootLayout() {
     return null
   }
 
-  return <Slot />
+  return (
+    <>
+      <Slot />
+      <Toast />
+    </>
+  )
 }
