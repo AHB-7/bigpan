@@ -26,9 +26,9 @@ function getCategoryTitle(category: string): string {
     time: 'Tidsbruk',
     cooking_method: 'Kokkemetoder',
     meal_type: 'Måltidstyper',
-    equipment: 'Kjøkkenutstyr',
     season: 'Årstider',
     occasion: 'Anledninger',
+    allergens: 'Allergener',
   }
   return titles[category] || category
 }

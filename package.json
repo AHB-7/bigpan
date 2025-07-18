@@ -8,8 +8,6 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "generate-types": "supabase gen types typescript --project-id jlcvqvzvsdswfuikyang > src/types/supabase.ts",
-    "update-types": "./scripts/update-types.sh",
-    "watch-schema": "./scripts/watch-schema.sh",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",

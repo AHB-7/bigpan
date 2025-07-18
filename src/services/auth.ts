@@ -145,7 +145,6 @@ export const authOperations = {
     }
   },
 
-  // Helper to get current user profile (only if needed elsewhere)
   async getCurrentUserProfile() {
     const { session } = useAuthStore.getState()
 
@@ -170,7 +169,6 @@ export const authOperations = {
     }
   },
 
-  // Helper to update user profile
   async updateProfile(updates: Partial<User>) {
     const { session } = useAuthStore.getState()
 
@@ -199,7 +197,6 @@ export const authOperations = {
     }
   },
 
-  // New function to update user preferences with filter tag mapping
   async updatePreferences(
     selectedTags: Record<string, string[]>,
     additionalPrefs?: any
@@ -218,14 +215,52 @@ export const authOperations = {
       const allTagIds = Object.values(selectedTags).flat()
       console.log('✅ Using tag UUIDs directly:', allTagIds)
 
-      // Step 2: Extract specific data for profiles table
-      const difficultyTags = selectedTags.difficulty || []
+      // Step 2: Map difficulty UUID to cooking_level string
+      let cookingLevelString = 'beginner' // Default value
+
+      if (selectedTags.difficulty && selectedTags.difficulty.length > 0) {
+        // Get the actual tag data to find the slug/name
+        const difficultyTagId = selectedTags.difficulty[0]
+
+        try {
+          const { data: difficultyTag, error: tagError } = await supabase
+            .from('filter_tags')
+            .select('slug, name')
+            .eq('id', difficultyTagId)
+            .eq('category', 'difficulty')
+            .single()
+
+          if (!tagError && difficultyTag) {
+            // Map slug to the expected cooking_level values
+            const slugToCookingLevel: Record<string, string> = {
+              beginner: 'beginner',
+              intermediate: 'intermediate',
+              advanced: 'advanced',
+              nybegynner: 'beginner', // Norwegian
+              øvet: 'intermediate', // Norwegian
+              ekspert: 'advanced', // Norwegian
+            }
+
+            cookingLevelString =
+              slugToCookingLevel[difficultyTag.slug] || 'beginner'
+            console.log(
+              `✅ Mapped difficulty UUID ${difficultyTagId} to cooking_level: ${cookingLevelString}`
+            )
+          }
+        } catch (error) {
+          console.log('⚠️ Could not map difficulty tag, using default:', error)
+        }
+      }
+
+      // Step 3: Extract specific data for profiles table
       const dietaryTags = selectedTags.dietary || []
+      const allergenTags = selectedTags.allergens || []
       const cuisineTags = selectedTags.cuisine || []
 
       const profileUpdates = {
-        cooking_level: difficultyTags[0] || 'beginner', // Take first difficulty or default
+        cooking_level: cookingLevelString, // ✅ Use mapped string value
         dietary_restrictions: dietaryTags,
+        allergens: allergenTags,
         favorite_cuisines: cuisineTags,
         updated_at: new Date().toISOString(),
         ...additionalPrefs?.profile,
@@ -248,11 +283,10 @@ export const authOperations = {
 
       console.log('✅ Profile updated successfully')
 
-      // Step 3: Update user_preferences table with proper format
       const preferencesUpdates = {
         preferred_filter_tags: allTagIds,
-        blocked_filter_tags: [], // Empty for now, can be set later
-        difficulty_preference: difficultyTags[0] || 'beginner',
+        blocked_filter_tags: allergenTags, // Block allergen tags for filtering
+        difficulty_preference: cookingLevelString, // ✅ Use mapped string value
         updated_at: new Date().toISOString(),
         ...additionalPrefs?.preferences,
       }

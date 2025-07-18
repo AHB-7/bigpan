@@ -27,7 +27,6 @@ export default function OnboardingAllInOne() {
         'time',
         'cooking_method',
         'meal_type',
-        'equipment',
         'season',
         'occasion',
         'allergens',

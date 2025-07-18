@@ -6,15 +6,14 @@ type FilterTag = Database['public']['Tables']['filter_tags']['Row']
 // Define the category type based on your check constraint
 export type FilterTagCategory =
   | 'dietary'
-  | 'allergens'
   | 'cuisine'
   | 'meal_type'
   | 'cooking_method'
   | 'difficulty'
   | 'time'
-  | 'equipment'
   | 'season'
   | 'occasion'
+  | 'allergens'
 
 export interface FilterTagsGrouped {
   dietary: FilterTag[]
@@ -23,9 +22,9 @@ export interface FilterTagsGrouped {
   cooking_method: FilterTag[]
   difficulty: FilterTag[]
   time: FilterTag[]
-  equipment: FilterTag[]
   season: FilterTag[]
   occasion: FilterTag[]
+  allergens: FilterTag[]
 }
 
 export const filterTagsService = {

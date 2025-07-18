@@ -152,7 +152,6 @@ export interface UserPreferencesFormData {
   cooking_time_preference?: number
   serving_size_preference?: number
   budget_preference?: string
-  equipment_owned?: string[]
   pantry_staples?: string[]
   notification_preferences?: NotificationPreferences
   meal_planning_preferences?: MealPlanningPreferences
