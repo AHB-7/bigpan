@@ -22,7 +22,7 @@ export default function IndexPage() {
       if (isAuthenticated) {
         router.replace('/home')
       } else {
-        router.replace('/login')
+        router.replace('/(auth)/startPage')
       }
     }
   }, [isAuthenticated, isInitializing, isLoading])

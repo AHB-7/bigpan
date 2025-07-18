@@ -1,14 +1,8 @@
 import React, { useState } from 'react'
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  TextInputProps,
-  StyleSheet,
-} from 'react-native'
+import { View, TextInput, TouchableOpacity, TextInputProps } from 'react-native'
 import { Text } from '../informatic/Text'
 import { theme } from '@/styles/theme'
-import { globalStyles } from '@/styles/globalStyles'
+import { styles } from '../stlyes'
 
 interface InputProps extends TextInputProps {
   label?: string
@@ -31,9 +25,9 @@ export const Input: React.FC<InputProps> = ({
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <View style={[globalStyles.inputContainer, containerStyle]}>
+    <View style={[styles.inputContainer, containerStyle]}>
       {label && (
-        <Text style={globalStyles.label}>
+        <Text style={styles.label}>
           {label}
           {required && <Text style={styles.required}> *</Text>}
         </Text>
@@ -42,8 +36,8 @@ export const Input: React.FC<InputProps> = ({
       <View style={styles.inputWrapper}>
         <TextInput
           style={[
-            globalStyles.input,
-            error && globalStyles.inputError,
+            styles.input,
+            error && styles.inputError,
             isPassword && styles.passwordInput,
             inputStyle,
           ]}
@@ -54,30 +48,18 @@ export const Input: React.FC<InputProps> = ({
 
         {isPassword && (
           <TouchableOpacity
-            style={globalStyles.passwordToggle}
+            style={styles.passwordToggle}
             onPress={() => setShowPassword(!showPassword)}
             activeOpacity={0.7}
           >
-            <Text style={globalStyles.passwordToggleText}>
+            <Text style={styles.passwordToggleText}>
               {showPassword ? '🙈' : '👁️'}
             </Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {error && <Text style={globalStyles.errorText}>{error}</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  inputWrapper: {
-    position: 'relative',
-  },
-  passwordInput: {
-    paddingRight: 50, // Make space for the eye icon
-  },
-  required: {
-    color: theme.colors.error || '#FF0000',
-  },
-})

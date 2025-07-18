@@ -23,26 +23,37 @@ import {
   IconButton,
 } from '@/components/common'
 import { styles } from './styles'
-import { LoginFormData, useLoginForm } from '@/schemas/auth'
+import { RegisterFormData, useRegisterForm } from '@/schemas/auth'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
 import { DividerWithText } from '../common/ui/divider'
 
-export const LoginScreen: React.FC = () => {
+export const RegistrerComponent: React.FC = () => {
   const { executeSupabase, isLoading } = useAsyncFunction()
-  const { signIn } = useAuth()
-  const { control, handleSubmit, errors } = useLoginForm()
-  const [loginError, setLoginError] = useState('')
+  const { signUp } = useAuth()
+  const { control, handleSubmit, errors } = useRegisterForm()
+  const [formError, setFormError] = useState('')
 
-  const onSubmit = async (data: LoginFormData) => {
-    setLoginError('')
+  const onSubmit = async (data: RegisterFormData) => {
+    setFormError('')
 
-    await executeSupabase(() => signIn(data.email, data.password), {
-      showErrorMethod: 'inline',
-      errorMessage:
-        'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
-      onSuccess: () => router.replace('/(auth)/onboarding/step-1'),
-      onShowError: (message) => setLoginError(message),
-    })
+    await executeSupabase(
+      () => signUp(data.email, data.password, data.userName),
+      {
+        showErrorMethod: 'inline',
+        errorMessage:
+          'Noe gikk galt under registreringen. Vennligst prøv igjen.',
+        successMessage: 'Konto opprettet! Sjekk e-posten din for bekreftelse.',
+        onSuccess: () => {
+          router.replace('/(auth)/onboarding/step-1')
+        },
+        onShowError: (message) => setFormError(message),
+      }
+    )
+  }
+
+  const handleSocialAuth = (provider: 'apple' | 'google' | 'facebook') => {
+    // TODO: Implement social authentication
+    console.log(`Social auth with ${provider} - Not implemented yet`)
   }
 
   return (
@@ -59,8 +70,10 @@ export const LoginScreen: React.FC = () => {
             {/* Form */}
             <View style={styles.formContainer}>
               <Text weight="semiBold" variant="heading1" style={styles.header}>
-                Logg Inn
+                Opprett konto
               </Text>
+
+              {/* Email Input */}
               <Controller
                 control={control}
                 name="email"
@@ -83,6 +96,7 @@ export const LoginScreen: React.FC = () => {
                 )}
               />
 
+              {/* Password Input */}
               <Controller
                 control={control}
                 name="password"
@@ -97,24 +111,38 @@ export const LoginScreen: React.FC = () => {
                     isPassword
                     autoCapitalize="none"
                     autoCorrect={false}
-                    autoComplete="current-password"
-                    textContentType="password"
+                    autoComplete="new-password"
+                    textContentType="newPassword"
                     required
                   />
                 )}
               />
 
-              {loginError ? <InlineError message={loginError} /> : null}
+              {/* Username Input */}
+              <Controller
+                control={control}
+                name="userName"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label="Brukernavn"
+                    placeholder="Velg et unikt brukernavn"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={errors.userName?.message}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="username"
+                    textContentType="username"
+                    required
+                  />
+                )}
+              />
 
-              <TextLink
-                href="/(auth)/forgot-password"
-                style={styles.forgotPassword}
-                variant="bodySmall"
-                weight="medium"
-              >
-                Glemt passord?
-              </TextLink>
+              {/* Form Error */}
+              {formError ? <InlineError message={formError} /> : null}
 
+              {/* Submit Button */}
               <Button
                 onPress={handleSubmit(onSubmit)}
                 disabled={isLoading}
@@ -123,38 +151,40 @@ export const LoginScreen: React.FC = () => {
                 {isLoading && (
                   <LoadingSpinner size="small" color={theme.colors.surface} />
                 )}
-                {isLoading ? 'Signing In...' : 'Logg Inn'}
+                {isLoading ? 'Oppretter konto...' : 'Opprett konto'}
               </Button>
 
+              {/* Social Auth Divider */}
               <View style={styles.divider}>
-                <DividerWithText text="eller" />
+                <DividerWithText text="eller fortsett med" />
               </View>
 
+              {/* Social Auth Buttons */}
               <View style={styles.iconsContainer}>
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('apple')}
                   variant="empty"
                   icon={<AntDesign name="apple1" size={24} color="black" />}
-                  accessibilityLabel="Logg inn med Apple"
-                  accessibilityHint="Logg inn med din Apple-konto"
+                  accessibilityLabel="Registrer deg med Apple"
+                  accessibilityHint="Opprett konto med din Apple-konto"
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('google')}
                   variant="empty"
                   icon={<AntDesign name="google" size={24} color="black" />}
-                  accessibilityLabel="Logg inn med Google"
-                  accessibilityHint="Logg inn med din Google-konto"
+                  accessibilityLabel="Registrer deg med Google"
+                  accessibilityHint="Opprett konto med din Google-konto"
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('facebook')}
                   variant="empty"
                   icon={
                     <AntDesign name="facebook-square" size={24} color="black" />
                   }
-                  accessibilityLabel="Logg inn med Facebook"
-                  accessibilityHint="Logg inn med din Facebook-konto"
+                  accessibilityLabel="Registrer deg med Facebook"
+                  accessibilityHint="Opprett konto med din Facebook-konto"
                   color={theme.colors.onSurfaceVariant}
                 />
               </View>
@@ -162,14 +192,14 @@ export const LoginScreen: React.FC = () => {
 
             {/* Footer */}
             <View style={styles.footer}>
-              <Text variant="bodySmall">Har du ikke en konto? </Text>
+              <Text variant="bodySmall">Har du allerede en konto? </Text>
               <TextLink
-                href={'/(auth)/register'}
+                href="/(auth)/login"
                 variant="bodySmall"
                 color={theme.colors.primary}
                 weight="semiBold"
               >
-                Registrer deg nå!
+                Logg inn her
               </TextLink>
             </View>
           </ScrollView>

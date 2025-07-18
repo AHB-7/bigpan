@@ -1,6 +1,7 @@
 // In your InlineError.tsx
-import { View, StyleSheet } from 'react-native'
+import { View } from 'react-native'
 import { Text } from './Text'
+import { styles } from '../stlyes'
 
 export const InlineError = ({ message }: { message: string }) => {
   return (
@@ -9,21 +10,3 @@ export const InlineError = ({ message }: { message: string }) => {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 8,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#FFF5F5',
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B6B',
-    borderRadius: 6,
-  },
-  errorText: {
-    color: '#D32F2F',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-})

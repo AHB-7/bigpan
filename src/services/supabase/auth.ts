@@ -2,19 +2,19 @@ import { supabase } from './client'
 import type { User } from '@/types'
 
 export const authService = {
-  // Sign up with email
   async signUp(email: string, password: string, userData?: Partial<User>) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: userData,
+        display_name: userData?.display_name || userData?.username,
+        ...userData,
       },
     })
     return { data, error }
   },
 
-  // Sign in with email
   async signIn(email: string, password: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -23,13 +23,11 @@ export const authService = {
     return { data, error }
   },
 
-  // Sign out
   async signOut() {
     const { error } = await supabase.auth.signOut()
     return { error }
   },
 
-  // Get current session
   async getSession() {
     const {
       data: { session },
@@ -38,7 +36,6 @@ export const authService = {
     return { session, error }
   },
 
-  // Get current user
   async getCurrentUser() {
     const {
       data: { user },
@@ -47,19 +44,16 @@ export const authService = {
     return { user, error }
   },
 
-  // Reset password
   async resetPassword(email: string) {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email)
     return { data, error }
   },
 
-  // Update user
   async updateUser(updates: { email?: string; password?: string; data?: any }) {
     const { data, error } = await supabase.auth.updateUser(updates)
     return { data, error }
   },
 
-  // Listen to auth changes
   onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback)
   },

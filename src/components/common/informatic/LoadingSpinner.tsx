@@ -1,6 +1,7 @@
 import React from 'react'
-import { ActivityIndicator, View, StyleSheet } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { theme } from '@/styles/theme'
+import { styles } from '../stlyes'
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'large'
@@ -14,15 +15,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   style,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.loaderContainer, style]}>
       <ActivityIndicator size={size} color={color} />
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-})

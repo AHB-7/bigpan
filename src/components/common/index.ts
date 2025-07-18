@@ -5,3 +5,7 @@ export { Text } from './informatic/Text'
 export { Input } from './forms/Input'
 export { LoadingSpinner } from './informatic/LoadingSpinner'
 export { TextLink } from './buttons/TextLink'
+export { ButtonCircle } from './buttons/ButtonCircle'
+export { IconButton } from './buttons/Icon'
+export { DividerWithText } from './ui/divider'
+

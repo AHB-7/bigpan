@@ -2,6 +2,7 @@ import React from 'react'
 import { Text as RNText, TextStyle, TouchableOpacity } from 'react-native'
 import { typography } from '@/styles/typography'
 import { router } from 'expo-router'
+import { theme } from '@/styles/theme'
 
 type FontWeight = keyof typeof typography.fonts.montserrat
 type TypographyVariant = keyof typeof typography.scale
@@ -22,7 +23,7 @@ export const TextLink: React.FC<LinkProps> = ({
   href,
   variant = 'body',
   weight,
-  color = '#007AFF',
+  color = theme.colors.onSurfaceVariant,
   style,
   ...props
 }) => {
