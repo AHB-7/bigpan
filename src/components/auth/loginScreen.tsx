@@ -40,7 +40,7 @@ export const LoginScreen: React.FC = () => {
       showErrorMethod: 'inline',
       errorMessage:
         'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
-      onSuccess: () => router.replace('/(auth)/onboarding/step-1'),
+      onSuccess: () => router.replace('/(auth)/onboarding/onboarding'),
       onShowError: (message) => setLoginError(message),
     })
   }

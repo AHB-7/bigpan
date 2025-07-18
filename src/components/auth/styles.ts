@@ -64,4 +64,50 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: theme.spacing.lg,
   },
+
+  // -------------------onboarding styles -------------------
+
+  onboardingContainer: {
+    flex: 1,
+  },
+  onboardingHeader: {
+    marginVertical: theme.spacing.lg,
+  },
+  onboardingButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing.lg,
+    width: '100%',
+  },
+  tagsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+  },
+  buttonsGrow: {
+    flexGrow: 1,
+    flexBasis: '48%',
+    maxWidth: '50%',
+    paddingVertical: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+    borderRadius: 100,
+  },
+  progressBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: theme.spacing.lg,
+  },
+  progressStep: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.onSurfaceVariant,
+    marginHorizontal: 2,
+  },
+  completedStep: {
+    backgroundColor: theme.colors.primary,
+  },
+  activeStep: {
+    backgroundColor: theme.colors.primary,
+  },
 })
