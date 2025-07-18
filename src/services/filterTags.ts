@@ -6,6 +6,7 @@ type FilterTag = Database['public']['Tables']['filter_tags']['Row']
 // Define the category type based on your check constraint
 export type FilterTagCategory =
   | 'dietary'
+  | 'allergens'
   | 'cuisine'
   | 'meal_type'
   | 'cooking_method'

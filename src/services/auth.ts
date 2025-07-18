@@ -1,7 +1,7 @@
 import { authService } from './supabase/auth'
 import { supabase } from './supabase/client'
 import { useAuthStore } from '@/stores/authStore'
-import type { User, UserPreferencesTyped } from '@/types'
+import type { User } from '@/types'
 
 // Simplified auth operations
 export const authOperations = {

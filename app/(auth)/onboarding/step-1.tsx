@@ -30,6 +30,7 @@ export default function OnboardingAllInOne() {
         'equipment',
         'season',
         'occasion',
+        'allergens',
       ]}
       title="Velkommen til BigPan!"
       subtitle="Fortell oss litt om dine matpreferanser"
