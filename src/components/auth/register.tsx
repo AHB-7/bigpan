@@ -1,3 +1,5 @@
+// Updated register.tsx with terms acceptance checkbox
+
 import { useState } from 'react'
 import {
   View,
@@ -6,6 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
+  Linking,
 } from 'react-native'
 import { router } from 'expo-router'
 import { Controller } from 'react-hook-form'
@@ -33,11 +37,27 @@ export const RegistrerComponent: React.FC = () => {
   const { control, handleSubmit, errors } = useRegisterForm()
   const [formError, setFormError] = useState('')
 
+  // ✅ Add terms acceptance state
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [privacyAccepted, setPrivacyAccepted] = useState(false)
+
   const onSubmit = async (data: RegisterFormData) => {
     setFormError('')
 
+    // ✅ Check terms acceptance before submitting
+    if (!termsAccepted || !privacyAccepted) {
+      setFormError(
+        'Du må akseptere bruksvilkårene og personvernserklæringen for å registrere deg.'
+      )
+      return
+    }
+
     await executeSupabase(
-      () => signUp(data.email, data.password, data.userName),
+      () =>
+        signUp(data.email, data.password, data.userName, {
+          termsAccepted: true,
+          privacyAccepted: true,
+        }),
       {
         showErrorMethod: 'inline',
         errorMessage:
@@ -54,6 +74,18 @@ export const RegistrerComponent: React.FC = () => {
   const handleSocialAuth = (provider: 'apple' | 'google' | 'facebook') => {
     // TODO: Implement social authentication
     console.log(`Social auth with ${provider} - Not implemented yet`)
+  }
+
+  const openTermsLink = () => {
+    // You can either open external link or navigate to in-app terms screen
+    Linking.openURL('https://bigpan.no/terms') // Replace with your actual terms URL
+    // Or navigate to in-app screen: router.push('/(auth)/terms')
+  }
+
+  const openPrivacyLink = () => {
+    // You can either open external link or navigate to in-app privacy screen
+    Linking.openURL('https://bigpan.no/privacy') // Replace with your actual privacy URL
+    // Or navigate to in-app screen: router.push('/(auth)/privacy')
   }
 
   return (
@@ -139,14 +171,90 @@ export const RegistrerComponent: React.FC = () => {
                 )}
               />
 
+              {/* ✅ Terms Acceptance Section */}
+              <View style={termsStyles.termsContainer}>
+                {/* Terms Checkbox */}
+                <TouchableOpacity
+                  style={termsStyles.checkboxContainer}
+                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      termsStyles.checkbox,
+                      termsAccepted && termsStyles.checkboxChecked,
+                    ]}
+                  >
+                    {termsAccepted && (
+                      <AntDesign
+                        name="check"
+                        size={16}
+                        color={theme.colors.onSurface}
+                      />
+                    )}
+                  </View>
+                  <View style={termsStyles.checkboxTextContainer}>
+                    <Text variant="bodySmall" style={termsStyles.checkboxText}>
+                      Jeg aksepterer{' '}
+                      <Text
+                        variant="bodySmall"
+                        style={termsStyles.linkText}
+                        onPress={openTermsLink}
+                      >
+                        bruksvilkårene
+                      </Text>
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* Privacy Checkbox */}
+                <TouchableOpacity
+                  style={termsStyles.checkboxContainer}
+                  onPress={() => setPrivacyAccepted(!privacyAccepted)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      termsStyles.checkbox,
+                      privacyAccepted && termsStyles.checkboxChecked,
+                    ]}
+                  >
+                    {privacyAccepted && (
+                      <AntDesign
+                        name="check"
+                        size={16}
+                        color={theme.colors.onSurface}
+                      />
+                    )}
+                  </View>
+                  <View style={termsStyles.checkboxTextContainer}>
+                    <Text variant="bodySmall" style={termsStyles.checkboxText}>
+                      Jeg aksepterer{' '}
+                      <Text
+                        variant="bodySmall"
+                        style={termsStyles.linkText}
+                        onPress={openPrivacyLink}
+                      >
+                        personvernserklæringen
+                      </Text>
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+
               {/* Form Error */}
               {formError ? <InlineError message={formError} /> : null}
 
               {/* Submit Button */}
               <Button
                 onPress={handleSubmit(onSubmit)}
-                disabled={isLoading}
+                disabled={isLoading || !termsAccepted || !privacyAccepted}
                 variant="filled"
+                style={
+                  !termsAccepted || !privacyAccepted
+                    ? termsStyles.disabledButton
+                    : undefined
+                }
               >
                 {isLoading && (
                   <LoadingSpinner size="small" color={theme.colors.surface} />
@@ -207,4 +315,46 @@ export const RegistrerComponent: React.FC = () => {
       </TouchableWithoutFeedback>
     </SafeAreaView>
   )
+}
+
+// ✅ Add styles for terms section
+const termsStyles = {
+  termsContainer: {
+    marginVertical: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  checkboxContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    gap: theme.spacing.sm,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: theme.colors.onSurface,
+    borderRadius: 4,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    backgroundColor: theme.colors.surface,
+    marginTop: 2, // Align with text baseline
+  },
+  checkboxChecked: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  checkboxTextContainer: {
+    flex: 1,
+  },
+  checkboxText: {
+    color: theme.colors.onSurface,
+    lineHeight: 20,
+  },
+  linkText: {
+    color: theme.colors.primary,
+    textDecorationLine: 'underline' as const,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
 }

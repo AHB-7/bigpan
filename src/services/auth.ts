@@ -28,72 +28,105 @@ export const authOperations = {
     }
   },
 
-  async signUp(email: string, password: string, username: string) {
-    const { setLoading } = useAuthStore.getState()
-
+  async signUp(
+    email: string,
+    password: string,
+    username: string,
+    additionalData?: {
+      termsAccepted?: boolean
+      privacyAccepted?: boolean
+      cookingLevel?: string
+    }
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      setLoading(true)
-
-      console.log('🚀 Starting signUp with:', { email, username })
-
-      // Step 1: Create user account
-      const { data, error } = await authService.signUp(email, password, {
-        username: username,
-        display_name: username,
-      })
-
-      console.log('📊 Supabase signUp result:', {
-        hasData: !!data,
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        error: error?.message,
-      })
-
-      if (error) {
-        console.log('❌ SignUp error:', error.message)
-        return { success: false, error: error.message }
-      }
-
-      if (!data?.user) {
-        console.log('⚠️ No user created')
-        return { success: false, error: 'Kunne ikke opprette konto' }
-      }
-
-      console.log('✅ User created successfully:', data.user.id)
-
-      // Step 2: If no session, sign in the user
-      if (!data.session) {
-        console.log('🔐 No session from signup, attempting sign in...')
-
-        const signInResult = await authOperations.signIn(email, password)
-        if (!signInResult.success) {
-          return {
-            success: false,
-            error:
-              'Konto opprettet, men kunne ikke logge inn automatisk. Prøv å logge inn manuelt.',
-          }
+      // Step 1: Check if terms are accepted
+      if (!additionalData?.termsAccepted || !additionalData?.privacyAccepted) {
+        return {
+          success: false,
+          error: 'Du må akseptere bruksvilkårene og personvernserklæringen',
         }
-        console.log('✅ Auto sign-in successful')
-      } else {
-        console.log('✅ Session created from signup')
       }
 
-      return {
-        success: true,
-        data,
-        message: 'Konto opprettet! Velkommen til BigPan!',
+      // Step 2: Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            display_name: username,
+            cooking_level: additionalData.cookingLevel || 'beginner',
+            terms_accepted: true,
+            privacy_accepted: true,
+          },
+        },
+      })
+
+      if (authError) {
+        console.log('❌ Auth signup failed:', authError)
+        return { success: false, error: authError.message }
       }
+
+      if (!authData.user) {
+        return { success: false, error: 'Ingen bruker opprettet' }
+      }
+
+      // Step 3: Update existing profile with terms acceptance
+      // Supabase Auth already created the profile, we just need to update it
+      const profileUpdates = {
+        username,
+        display_name: username,
+        cooking_level: additionalData.cookingLevel || 'beginner',
+        terms_accepted: true,
+        terms_version: '1.0',
+        terms_accepted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update(profileUpdates)
+        .eq('user_id', authData.user.id)
+
+      if (profileError) {
+        console.log('❌ Profile creation failed:', profileError)
+
+        // If profile update fails, log the error but don't fail the signup
+        return {
+          success: false,
+          error: 'Kunne ikke oppdatere profil med vilkårsaksept. Prøv igjen.',
+        }
+      }
+
+      // Step 4: Create user preferences record
+      const preferencesData = {
+        user_id: authData.user.id,
+        difficulty_preference: additionalData.cookingLevel || 'beginner',
+        serving_size_preference: 2,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const { error: preferencesError } = await supabase
+        .from('user_preferences')
+        .insert(preferencesData)
+
+      if (preferencesError) {
+        console.log('⚠️ User preferences creation failed:', preferencesError)
+        // This is not critical, user can set preferences later
+      }
+
+      console.log('✅ User signup successful with terms acceptance')
+
+      // Update the auth store
+      useAuthStore.getState().setSession(authData.session)
+
+      return { success: true }
     } catch (error: any) {
-      console.log('💥 SignUp exception:', error.message)
-      return {
-        success: false,
-        error: error.message || 'Kunne ikke opprette konto',
-      }
-    } finally {
-      setLoading(false)
+      console.log('💥 Signup exception:', error)
+      return { success: false, error: error.message }
     }
   },
-
   async signOut() {
     const { setLoading, clearAuth } = useAuthStore.getState()
 
@@ -313,127 +346,6 @@ export const authOperations = {
       return { success: true, data: { profileUpdates, preferencesUpdates } }
     } catch (error: any) {
       console.log('💥 updatePreferences exception:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  async acceptTerms(): Promise<{ success: boolean; error?: string }> {
-    const { session } = useAuthStore.getState()
-
-    if (!session?.user) {
-      return { success: false, error: 'No authenticated user' }
-    }
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          terms_accepted: true,
-          terms_version: '1.0', // Update this when you change terms
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', session.user.id)
-
-      if (error) {
-        console.log('❌ Terms acceptance failed:', error)
-        return { success: false, error: error.message }
-      }
-
-      console.log('✅ Terms accepted successfully')
-      return { success: true }
-    } catch (error: any) {
-      console.log('💥 Terms acceptance exception:', error)
-      return { success: false, error: error.message }
-    }
-  },
-
-  /**
-   * Check if user has accepted current terms
-   */
-  async checkTermsAcceptance(): Promise<{
-    success: boolean
-    hasAccepted: boolean
-    error?: string
-  }> {
-    const { session } = useAuthStore.getState()
-
-    if (!session?.user) {
-      return {
-        success: false,
-        hasAccepted: false,
-        error: 'No authenticated user',
-      }
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('terms_accepted, terms_version, terms_accepted_at')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (error) {
-        return { success: false, hasAccepted: false, error: error.message }
-      }
-
-      const currentTermsVersion = '1.0'
-      const hasAcceptedCurrentTerms =
-        data.terms_accepted && data.terms_version === currentTermsVersion
-
-      return {
-        success: true,
-        hasAccepted: hasAcceptedCurrentTerms,
-      }
-    } catch (error: any) {
-      return { success: false, hasAccepted: false, error: error.message }
-    }
-  },
-
-  /**
-   * Create user profile with terms requirement
-   */
-  async createProfile(userData: {
-    username: string
-    display_name?: string
-    cooking_level?: string
-    termsAccepted: boolean
-  }): Promise<{ success: boolean; error?: string }> {
-    const { session } = useAuthStore.getState()
-
-    if (!session?.user) {
-      return { success: false, error: 'No authenticated user' }
-    }
-
-    if (!userData.termsAccepted) {
-      return {
-        success: false,
-        error: 'Terms must be accepted to create profile',
-      }
-    }
-
-    try {
-      const profileData = {
-        user_id: session.user.id,
-        username: userData.username,
-        display_name: userData.display_name || userData.username,
-        cooking_level: userData.cooking_level || 'beginner',
-        terms_accepted: true,
-        terms_version: '1.0',
-        terms_accepted_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-
-      const { error } = await supabase.from('profiles').insert(profileData)
-
-      if (error) {
-        console.log('❌ Profile creation failed:', error)
-        return { success: false, error: error.message }
-      }
-
-      console.log('✅ Profile created successfully with terms acceptance')
-      return { success: true }
-    } catch (error: any) {
-      console.log('💥 Profile creation exception:', error)
       return { success: false, error: error.message }
     }
   },
