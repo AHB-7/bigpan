@@ -83,7 +83,7 @@ export const DynamicOnboardingStep: React.FC<DynamicOnboardingStepProps> = ({
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <Text variant="heading1" weight="bold" style={styles.title}>
             {title}
           </Text>
@@ -91,7 +91,6 @@ export const DynamicOnboardingStep: React.FC<DynamicOnboardingStepProps> = ({
             {subtitle}
           </Text>
 
-          {/* Progress Bar */}
           <View style={styles.progressBar}>
             {Array.from({ length: totalSteps }, (_, index) => (
               <View
@@ -104,9 +103,8 @@ export const DynamicOnboardingStep: React.FC<DynamicOnboardingStepProps> = ({
               />
             ))}
           </View>
-        </View>
+        </View> */}
 
-        {/* Dynamic Filter Tag Sections */}
         {categories.map((category) => (
           <FilterTagPicker
             key={category}

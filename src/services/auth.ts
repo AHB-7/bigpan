@@ -1,7 +1,7 @@
 import { authService } from './supabase/auth'
 import { supabase } from './supabase/client'
 import { useAuthStore } from '@/stores/authStore'
-import type { User   } from '@/types'
+import type { User, UserPreferencesTyped } from '@/types'
 
 // Simplified auth operations
 export const authOperations = {
@@ -200,33 +200,38 @@ export const authOperations = {
   },
 
   // New function to update user preferences with filter tag mapping
-  async updatePreferences(preferences: any) {
+  async updatePreferences(
+    selectedTags: Record<string, string[]>,
+    additionalPrefs?: any
+  ) {
     const { session } = useAuthStore.getState()
 
+    console.log('🚀 updatePreferences called with:', selectedTags)
+
     if (!session?.user) {
+      console.log('❌ No authenticated user')
       return { success: false, error: 'No authenticated user' }
     }
 
     try {
-      // Step 1: Map frontend strings to filter tag UUIDs
-      const preferredTagUUIDs = await this.mapPreferencesToFilterTags(
-        preferences.dietary_restrictions,
-        preferences.favorite_cuisines,
-        preferences.cooking_level
-      )
+      // Step 1: The UUIDs are already correct, so we can use them directly
+      const allTagIds = Object.values(selectedTags).flat()
+      console.log('✅ Using tag UUIDs directly:', allTagIds)
 
-      if (!preferredTagUUIDs.success) {
-        return { success: false, error: preferredTagUUIDs.error }
-      }
+      // Step 2: Extract specific data for profiles table
+      const difficultyTags = selectedTags.difficulty || []
+      const dietaryTags = selectedTags.dietary || []
+      const cuisineTags = selectedTags.cuisine || []
 
-      // Step 2: Update profiles table (for display/search purposes)
       const profileUpdates = {
-        cooking_level: preferences.cooking_level,
-        dietary_restrictions: preferences.dietary_restrictions,
-        allergens: preferences.allergens,
-        favorite_cuisines: preferences.favorite_cuisines,
+        cooking_level: difficultyTags[0] || 'beginner', // Take first difficulty or default
+        dietary_restrictions: dietaryTags,
+        favorite_cuisines: cuisineTags,
         updated_at: new Date().toISOString(),
+        ...additionalPrefs?.profile,
       }
+
+      console.log('🔄 Updating profiles table with:', profileUpdates)
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -234,22 +239,28 @@ export const authOperations = {
         .eq('user_id', session.user.id)
 
       if (profileError) {
+        console.log('❌ Profile update failed:', profileError)
         return {
           success: false,
           error: `Profile update failed: ${profileError.message}`,
         }
       }
 
+      console.log('✅ Profile updated successfully')
+
       // Step 3: Update user_preferences table with proper format
       const preferencesUpdates = {
-        preferred_filter_tags: preferredTagUUIDs.data,
+        preferred_filter_tags: allTagIds,
         blocked_filter_tags: [], // Empty for now, can be set later
-        cooking_time_preference: preferences.cooking_time_preference,
-        difficulty_preference: preferences.cooking_level,
-        serving_size_preference: preferences.serving_size_preference,
-        equipment_owned: preferences.equipment_owned,
+        difficulty_preference: difficultyTags[0] || 'beginner',
         updated_at: new Date().toISOString(),
+        ...additionalPrefs?.preferences,
       }
+
+      console.log(
+        '🔄 Updating user_preferences table with:',
+        preferencesUpdates
+      )
 
       const { error: preferencesError } = await supabase
         .from('user_preferences')
@@ -257,53 +268,17 @@ export const authOperations = {
         .eq('user_id', session.user.id)
 
       if (preferencesError) {
+        console.log('❌ Preferences update failed:', preferencesError)
         return {
           success: false,
           error: `Preferences update failed: ${preferencesError.message}`,
         }
       }
 
+      console.log('✅ All updates successful!')
       return { success: true, data: { profileUpdates, preferencesUpdates } }
     } catch (error: any) {
-      return { success: false, error: error.message }
-    }
-  },
-
-  // Helper function to map preference strings to filter tag UUIDs
-  async mapPreferencesToFilterTags(
-    dietaryRestrictions: string[],
-    cuisines: string[],
-    cookingLevel: string
-  ) {
-    try {
-      const allPreferenceStrings = [
-        ...(dietaryRestrictions || []),
-        ...(cuisines || []),
-        cookingLevel,
-      ].filter(Boolean)
-
-      if (allPreferenceStrings.length === 0) {
-        return { success: true, data: [] }
-      }
-
-      // Query filter_tags table to get UUIDs for the preference strings
-      const { data: filterTags, error } = await supabase
-        .from('filter_tags')
-        .select('id, slug')
-        .in('slug', allPreferenceStrings)
-        .eq('is_active', true)
-
-      if (error) {
-        return {
-          success: false,
-          error: `Failed to fetch filter tags: ${error.message}`,
-        }
-      }
-
-      // Return array of UUIDs
-      const tagUUIDs = filterTags?.map((tag) => tag.id) || []
-      return { success: true, data: tagUUIDs }
-    } catch (error: any) {
+      console.log('💥 updatePreferences exception:', error)
       return { success: false, error: error.message }
     }
   },

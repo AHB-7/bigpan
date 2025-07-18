@@ -58,13 +58,27 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   // Utility functions
   getAllSelectedTags: (): Record<string, string[]> => {
     const state = get()
-    return {
-      dietary: [...state.dietaryRestrictions, ...state.allergens],
-      cuisine: state.favoriteCuisines,
-      difficulty: state.cookingLevel ? [state.cookingLevel] : [],
-      time: state.cookingTimePreference ? [state.cookingTimePreference] : [],
-      // equipment: state.equipmentOwned, // Handle separately if needed
+    const result: Record<string, string[]> = {}
+
+    // Only include categories that have selections
+    if (state.dietaryRestrictions.length > 0) {
+      result.dietary = state.dietaryRestrictions
     }
+    if (state.allergens.length > 0) {
+      // You can either combine with dietary or keep separate
+      result.dietary = [...(result.dietary || []), ...state.allergens]
+    }
+    if (state.favoriteCuisines.length > 0) {
+      result.cuisine = state.favoriteCuisines
+    }
+    if (state.cookingLevel) {
+      result.difficulty = [state.cookingLevel]
+    }
+    if (state.cookingTimePreference) {
+      result.time = [state.cookingTimePreference]
+    }
+
+    return result
   },
 
   clearOnboarding: () =>

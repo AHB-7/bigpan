@@ -8,12 +8,6 @@ export default function OnboardingAllInOne() {
   const { executeSupabase, isLoading } = useAsyncFunction()
 
   const handleComplete = async (selectedTags: Record<string, string[]>) => {
-    // selectedTags = {
-    //   dietary: [uuid1, uuid2],
-    //   cuisine: [uuid3, uuid4],
-    //   difficulty: [uuid5]
-    // }
-
     await executeSupabase(() => updatePreferences(selectedTags), {
       showErrorMethod: 'alert',
       successMessage: 'Profil oppdatert! Velkommen til BigPan!',
