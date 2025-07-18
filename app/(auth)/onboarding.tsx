@@ -1,4 +1,3 @@
-// app/(auth)/onboarding/step-1.tsx
 import React, { useState } from 'react'
 import { View, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,9 +9,7 @@ import { useAsyncFunction } from '@/hooks/asyncFunction'
 import { router } from 'expo-router'
 import { styles } from '@/components/auth/styles'
 import { NavBar } from '@/components/nav/NavBar'
-import { theme } from '@/styles/theme'
 
-// Step configuration
 const ONBOARDING_STEPS = [
   {
     categories: ['dietary'] as FilterTagCategory[],
@@ -59,7 +56,7 @@ export default function Onboarding() {
   >({})
 
   const { updatePreferences } = useAuth()
-  const { executeSupabase, isLoading } = useAsyncFunction()
+  const { executeSupabase } = useAsyncFunction()
 
   const currentStepConfig = ONBOARDING_STEPS[currentStep]
   const { tagsGrouped, loading } = useFilterTagsGrouped(
@@ -84,18 +81,13 @@ export default function Onboarding() {
   }
 
   const handleNext = async () => {
-    // ✅ ALWAYS merge current step tags into all tags (local state only)
     const updatedAllTags = {
       ...allSelectedTags,
       ...currentStepTags,
     }
     setAllSelectedTags(updatedAllTags)
 
-    console.log('📝 Updated local tags (not saved yet):', updatedAllTags)
-
     if (isLastStep) {
-      // ✅ ONLY save to database on the FINAL step
-      console.log('💾 Final step - saving to database...')
       await executeSupabase(() => updatePreferences(updatedAllTags), {
         showErrorMethod: 'alert',
         successMessage: 'Profil oppdatert! Velkommen til BigPan!',
@@ -105,16 +97,13 @@ export default function Onboarding() {
         },
       })
     } else {
-      // ✅ Just move to next step (NO database save)
-      console.log('➡️ Moving to next step (no database save)')
       setCurrentStep(currentStep + 1)
-      setCurrentStepTags({}) // Reset current step selections
+      setCurrentStepTags({})
     }
   }
 
   const handleBack = () => {
     if (currentStep > 0) {
-      // ✅ Save current step tags before going back
       const updatedAllTags = {
         ...allSelectedTags,
         ...currentStepTags,
@@ -123,7 +112,6 @@ export default function Onboarding() {
 
       setCurrentStep(currentStep - 1)
 
-      // ✅ Load previous step's tags into currentStepTags
       const prevStepCategories = ONBOARDING_STEPS[currentStep - 1].categories
       const prevStepTags: Record<string, string[]> = {}
 
@@ -139,13 +127,11 @@ export default function Onboarding() {
 
   const handleSkip = async () => {
     if (isLastStep) {
-      // ✅ If skipping final step, save whatever we have so far
       const finalTags = {
         ...allSelectedTags,
         ...currentStepTags,
       }
 
-      console.log('⏭️ Skipping final step - saving current progress...')
       await executeSupabase(() => updatePreferences(finalTags), {
         showErrorMethod: 'alert',
         successMessage: 'Velkommen til BigPan!',
@@ -155,34 +141,13 @@ export default function Onboarding() {
           router.replace('/(tabs)/home')
         },
         onError: () => {
-          // Even if saving fails, let them into the app
           router.replace('/(tabs)/home')
         },
       })
     } else {
-      // ✅ Just skip to next step (NO database save)
-      console.log('⏭️ Skipping step (no database save)')
       setCurrentStep(currentStep + 1)
       setCurrentStepTags({})
     }
-  }
-
-  // ✅ Also add a "Finish Early" option if user wants to complete onboarding
-  const handleFinishEarly = async () => {
-    const finalTags = {
-      ...allSelectedTags,
-      ...currentStepTags,
-    }
-
-    console.log('🏁 Finishing onboarding early...')
-    await executeSupabase(() => updatePreferences(finalTags), {
-      showErrorMethod: 'alert',
-      successMessage: 'Profil oppdatert! Velkommen til BigPan!',
-      errorMessage: 'Kunne ikke lagre preferanser. Prøv igjen.',
-      onSuccess: () => {
-        router.replace('/(tabs)/home')
-      },
-    })
   }
 
   return (

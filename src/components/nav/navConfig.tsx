@@ -6,23 +6,17 @@ export const navigationConfigs = {
   back: {
     leftButton: {
       onPress: () => {
-        router.canGoBack()
-          ? router.back()
-          : console.log('No back navigation available')
+        router.canGoBack() && router.back()
       },
       iconName: 'arrow-back' as const,
     },
     middleButton: {
-      onPress: () => {
-        console.log('Preferences and Allergies: Save settings')
-      },
+      onPress: () => {},
       iconName: 'save' as const,
       text: '',
     },
     rightButton: {
-      onPress: () => {
-        console.log('Preferences and Allergies: Open help')
-      },
+      onPress: () => {},
       iconName: 'help' as const,
       shouldShow: false,
     },

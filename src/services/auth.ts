@@ -3,7 +3,6 @@ import { supabase } from './supabase/client'
 import { useAuthStore } from '@/stores/authStore'
 import type { User } from '@/types'
 
-// Simplified auth operations
 export const authOperations = {
   async signIn(email: string, password: string) {
     const { setLoading, setSession } = useAuthStore.getState()
@@ -39,7 +38,6 @@ export const authOperations = {
     }
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Step 1: Check if terms are accepted
       if (!additionalData?.termsAccepted || !additionalData?.privacyAccepted) {
         return {
           success: false,
@@ -47,7 +45,6 @@ export const authOperations = {
         }
       }
 
-      // Step 2: Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -63,7 +60,6 @@ export const authOperations = {
       })
 
       if (authError) {
-        console.log('❌ Auth signup failed:', authError)
         return { success: false, error: authError.message }
       }
 
@@ -71,8 +67,6 @@ export const authOperations = {
         return { success: false, error: 'Ingen bruker opprettet' }
       }
 
-      // Step 3: Update existing profile with terms acceptance
-      // Supabase Auth already created the profile, we just need to update it
       const profileUpdates = {
         username,
         display_name: username,
@@ -89,16 +83,12 @@ export const authOperations = {
         .eq('user_id', authData.user.id)
 
       if (profileError) {
-        console.log('❌ Profile creation failed:', profileError)
-
-        // If profile update fails, log the error but don't fail the signup
         return {
           success: false,
           error: 'Kunne ikke oppdatere profil med vilkårsaksept. Prøv igjen.',
         }
       }
 
-      // Step 4: Create user preferences record
       const preferencesData = {
         user_id: authData.user.id,
         difficulty_preference: additionalData.cookingLevel || 'beginner',
@@ -107,26 +97,16 @@ export const authOperations = {
         updated_at: new Date().toISOString(),
       }
 
-      const { error: preferencesError } = await supabase
-        .from('user_preferences')
-        .insert(preferencesData)
+      await supabase.from('user_preferences').insert(preferencesData)
 
-      if (preferencesError) {
-        console.log('⚠️ User preferences creation failed:', preferencesError)
-        // This is not critical, user can set preferences later
-      }
-
-      console.log('✅ User signup successful with terms acceptance')
-
-      // Update the auth store
       useAuthStore.getState().setSession(authData.session)
 
       return { success: true }
     } catch (error: any) {
-      console.log('💥 Signup exception:', error)
       return { success: false, error: error.message }
     }
   },
+
   async signOut() {
     const { setLoading, clearAuth } = useAuthStore.getState()
 
@@ -153,25 +133,19 @@ export const authOperations = {
     try {
       setLoading(true)
 
-      // Get current session
       const { session } = await authService.getSession()
       if (session) {
-        console.log('🔐 Existing session found, setting auth state')
         setSession(session)
       }
 
-      // Set up auth state change listener (only once)
       const {
         data: { subscription },
       } = authService.onAuthStateChange((event, session) => {
-        console.log('🔄 Auth event:', event, session?.user?.id || 'no user')
         setSession(session)
       })
 
-      // Return the subscription for cleanup if needed
       return { success: true, subscription }
     } catch (error) {
-      console.error('Auth initialization error:', error)
       return { success: false, error: 'Failed to initialize authentication' }
     } finally {
       setLoading(false)
@@ -236,19 +210,12 @@ export const authOperations = {
   ) {
     const { session } = useAuthStore.getState()
 
-    console.log('🚀 updatePreferences called with:', selectedTags)
-
     if (!session?.user) {
-      console.log('❌ No authenticated user')
       return { success: false, error: 'No authenticated user' }
     }
 
     try {
-      // Step 1: Process tag UUIDs
       const allTagIds = Object.values(selectedTags).flat()
-      console.log('✅ Using tag UUIDs directly:', allTagIds)
-
-      // Step 2: Map difficulty UUID to cooking_level string
       let cookingLevelString = 'beginner'
 
       if (selectedTags.difficulty && selectedTags.difficulty.length > 0) {
@@ -274,21 +241,16 @@ export const authOperations = {
 
             cookingLevelString =
               slugToCookingLevel[difficultyTag.slug] || 'beginner'
-            console.log(
-              `✅ Mapped difficulty UUID ${difficultyTagId} to cooking_level: ${cookingLevelString}`
-            )
           }
         } catch (error) {
-          console.log('⚠️ Could not map difficulty tag, using default:', error)
+          cookingLevelString = 'beginner'
         }
       }
 
-      // Step 3: Extract specific data for profiles table
       const dietaryTags = selectedTags.dietary || []
       const allergenTags = selectedTags.allergens || []
       const cuisineTags = selectedTags.cuisine || []
 
-      // Step 4: Update profiles table
       const profileUpdates = {
         cooking_level: cookingLevelString,
         dietary_restrictions: dietaryTags,
@@ -298,55 +260,43 @@ export const authOperations = {
         ...additionalPrefs?.profile,
       }
 
-      console.log('🔄 Updating profiles table with:', profileUpdates)
-
       const { error: profileError } = await supabase
         .from('profiles')
         .update(profileUpdates)
         .eq('user_id', session.user.id)
 
       if (profileError) {
-        console.log('❌ Profile update failed:', profileError)
         return {
           success: false,
           error: `Profile update failed: ${profileError.message}`,
         }
       }
 
-      console.log('✅ Profile updated successfully')
-
-      // Step 5: Handle user_preferences table with UPSERT
       const preferencesData = {
         user_id: session.user.id,
         preferred_filter_tags: allTagIds,
         blocked_filter_tags: allergenTags,
         difficulty_preference: cookingLevelString,
         updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(), // In case it's a new record
+        created_at: new Date().toISOString(),
         ...additionalPrefs?.preferences,
       }
 
-      console.log('🔄 Upserting user_preferences table with:', preferencesData)
-
-      // Use UPSERT to insert or update
       const { error: preferencesError } = await supabase
         .from('user_preferences')
         .upsert(preferencesData, {
-          onConflict: 'user_id', // Use user_id as the conflict resolution column
+          onConflict: 'user_id',
         })
 
       if (preferencesError) {
-        console.log('❌ Preferences upsert failed:', preferencesError)
         return {
           success: false,
           error: `Preferences update failed: ${preferencesError.message}`,
         }
       }
 
-      console.log('✅ All updates successful!')
       return { success: true, data: { profileUpdates, preferencesData } }
     } catch (error: any) {
-      console.log('💥 updatePreferences exception:', error)
       return { success: false, error: error.message }
     }
   },

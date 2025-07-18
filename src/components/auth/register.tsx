@@ -1,5 +1,3 @@
-// Updated register.tsx with terms acceptance checkbox
-
 import { useState } from 'react'
 import {
   View,
@@ -37,14 +35,12 @@ export const RegistrerComponent: React.FC = () => {
   const { control, handleSubmit, errors } = useRegisterForm()
   const [formError, setFormError] = useState('')
 
-  // ✅ Add terms acceptance state
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
 
   const onSubmit = async (data: RegisterFormData) => {
     setFormError('')
 
-    // ✅ Check terms acceptance before submitting
     if (!termsAccepted || !privacyAccepted) {
       setFormError(
         'Du må akseptere bruksvilkårene og personvernserklæringen for å registrere deg.'
@@ -71,21 +67,14 @@ export const RegistrerComponent: React.FC = () => {
     )
   }
 
-  const handleSocialAuth = (provider: 'apple' | 'google' | 'facebook') => {
-    // TODO: Implement social authentication
-    console.log(`Social auth with ${provider} - Not implemented yet`)
-  }
+  const handleSocialAuth = (_provider: 'apple' | 'google' | 'facebook') => {}
 
   const openTermsLink = () => {
-    // You can either open external link or navigate to in-app terms screen
-    Linking.openURL('https://bigpan.no/terms') // Replace with your actual terms URL
-    // Or navigate to in-app screen: router.push('/(auth)/terms')
+    Linking.openURL('https://bigpan.no/terms')
   }
 
   const openPrivacyLink = () => {
-    // You can either open external link or navigate to in-app privacy screen
-    Linking.openURL('https://bigpan.no/privacy') // Replace with your actual privacy URL
-    // Or navigate to in-app screen: router.push('/(auth)/privacy')
+    Linking.openURL('https://bigpan.no/privacy')
   }
 
   return (
@@ -99,13 +88,11 @@ export const RegistrerComponent: React.FC = () => {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Form */}
             <View style={styles.formContainer}>
               <Text weight="semiBold" variant="heading1" style={styles.header}>
                 Opprett konto
               </Text>
 
-              {/* Email Input */}
               <Controller
                 control={control}
                 name="email"
@@ -128,7 +115,6 @@ export const RegistrerComponent: React.FC = () => {
                 )}
               />
 
-              {/* Password Input */}
               <Controller
                 control={control}
                 name="password"
@@ -150,7 +136,6 @@ export const RegistrerComponent: React.FC = () => {
                 )}
               />
 
-              {/* Username Input */}
               <Controller
                 control={control}
                 name="userName"
@@ -171,9 +156,7 @@ export const RegistrerComponent: React.FC = () => {
                 )}
               />
 
-              {/* ✅ Terms Acceptance Section */}
               <View style={termsStyles.termsContainer}>
-                {/* Terms Checkbox */}
                 <TouchableOpacity
                   style={termsStyles.checkboxContainer}
                   onPress={() => setTermsAccepted(!termsAccepted)}
@@ -207,7 +190,6 @@ export const RegistrerComponent: React.FC = () => {
                   </View>
                 </TouchableOpacity>
 
-                {/* Privacy Checkbox */}
                 <TouchableOpacity
                   style={termsStyles.checkboxContainer}
                   onPress={() => setPrivacyAccepted(!privacyAccepted)}
@@ -242,10 +224,8 @@ export const RegistrerComponent: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Form Error */}
               {formError ? <InlineError message={formError} /> : null}
 
-              {/* Submit Button */}
               <Button
                 onPress={handleSubmit(onSubmit)}
                 disabled={isLoading || !termsAccepted || !privacyAccepted}
@@ -262,12 +242,10 @@ export const RegistrerComponent: React.FC = () => {
                 {isLoading ? 'Oppretter konto...' : 'Opprett konto'}
               </Button>
 
-              {/* Social Auth Divider */}
               <View style={styles.divider}>
                 <DividerWithText text="eller fortsett med" />
               </View>
 
-              {/* Social Auth Buttons */}
               <View style={styles.iconsContainer}>
                 <IconButton
                   onPress={() => handleSocialAuth('apple')}
@@ -298,7 +276,6 @@ export const RegistrerComponent: React.FC = () => {
               </View>
             </View>
 
-            {/* Footer */}
             <View style={styles.footer}>
               <Text variant="bodySmall">Har du allerede en konto? </Text>
               <TextLink
@@ -317,7 +294,6 @@ export const RegistrerComponent: React.FC = () => {
   )
 }
 
-// ✅ Add styles for terms section
 const termsStyles = {
   termsContainer: {
     marginVertical: theme.spacing.md,
@@ -337,7 +313,7 @@ const termsStyles = {
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     backgroundColor: theme.colors.surface,
-    marginTop: 2, // Align with text baseline
+    marginTop: 2,
   },
   checkboxChecked: {
     backgroundColor: theme.colors.primary,

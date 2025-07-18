@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/common/informatic/LoadingSpinner'
 
 export default function IndexPage() {
   const [isInitializing, setIsInitializing] = useState(true)
-  const { isAuthenticated, isLoading, initializeAuth } = useAuth()
+  const { isAuthenticated, isLoading, initializeAuth, user } = useAuth()
 
   useEffect(() => {
     const init = async () => {
@@ -19,8 +19,8 @@ export default function IndexPage() {
 
   useEffect(() => {
     if (!isInitializing && !isLoading) {
-      if (isAuthenticated) {
-        router.replace('/home')
+      if (isAuthenticated && user) {
+        router.replace(`/user/${user.id || user.user_id}`)
       } else {
         router.replace('/(auth)/startPage')
       }

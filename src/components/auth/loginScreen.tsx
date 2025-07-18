@@ -29,7 +29,7 @@ import { DividerWithText } from '../common/ui/divider'
 
 export const LoginScreen: React.FC = () => {
   const { executeSupabase, isLoading } = useAsyncFunction()
-  const { signIn } = useAuth()
+  const { signIn, user } = useAuth()
   const { control, handleSubmit, errors } = useLoginForm()
   const [loginError, setLoginError] = useState('')
 
@@ -40,9 +40,17 @@ export const LoginScreen: React.FC = () => {
       showErrorMethod: 'inline',
       errorMessage:
         'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
-      onSuccess: () => router.replace('/(auth)/onboarding'),
+      onSuccess: () => {
+        user?.id
+          ? router.replace(`/user/${user.id}`)
+          : router.replace('/(auth)/onboarding')
+      },
       onShowError: (message) => setLoginError(message),
     })
+  }
+
+  const handleSocialAuth = (_provider: 'apple' | 'google' | 'facebook') => {
+    router.push('/(auth)/register')
   }
 
   return (
@@ -56,11 +64,11 @@ export const LoginScreen: React.FC = () => {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Form */}
             <View style={styles.formContainer}>
               <Text weight="semiBold" variant="heading1" style={styles.header}>
                 Logg Inn
               </Text>
+
               <Controller
                 control={control}
                 name="email"
@@ -104,7 +112,7 @@ export const LoginScreen: React.FC = () => {
                 )}
               />
 
-              {loginError ? <InlineError message={loginError} /> : null}
+              {loginError && <InlineError message={loginError} />}
 
               <TextLink
                 href="/(auth)/forgot-password"
@@ -123,7 +131,7 @@ export const LoginScreen: React.FC = () => {
                 {isLoading && (
                   <LoadingSpinner size="small" color={theme.colors.surface} />
                 )}
-                {isLoading ? 'Signing In...' : 'Logg Inn'}
+                {isLoading ? 'Logger inn...' : 'Logg Inn'}
               </Button>
 
               <View style={styles.divider}>
@@ -132,7 +140,7 @@ export const LoginScreen: React.FC = () => {
 
               <View style={styles.iconsContainer}>
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('apple')}
                   variant="empty"
                   icon={<AntDesign name="apple1" size={24} color="black" />}
                   accessibilityLabel="Logg inn med Apple"
@@ -140,7 +148,7 @@ export const LoginScreen: React.FC = () => {
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('google')}
                   variant="empty"
                   icon={<AntDesign name="google" size={24} color="black" />}
                   accessibilityLabel="Logg inn med Google"
@@ -148,7 +156,7 @@ export const LoginScreen: React.FC = () => {
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
-                  onPress={() => router.push('/(auth)/register')}
+                  onPress={() => handleSocialAuth('facebook')}
                   variant="empty"
                   icon={
                     <AntDesign name="facebook-square" size={24} color="black" />
@@ -160,13 +168,11 @@ export const LoginScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Footer */}
             <View style={styles.footer}>
               <Text variant="bodySmall">Har du ikke en konto? </Text>
               <TextLink
-                href={'/ss'}
+                href="/(auth)/register"
                 variant="bodySmall"
-                onPress={() => router.push('/(auth)/register')}
                 color={theme.colors.primary}
                 weight="semiBold"
               >
