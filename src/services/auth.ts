@@ -316,4 +316,125 @@ export const authOperations = {
       return { success: false, error: error.message }
     }
   },
+  async acceptTerms(): Promise<{ success: boolean; error?: string }> {
+    const { session } = useAuthStore.getState()
+
+    if (!session?.user) {
+      return { success: false, error: 'No authenticated user' }
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          terms_accepted: true,
+          terms_version: '1.0', // Update this when you change terms
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', session.user.id)
+
+      if (error) {
+        console.log('❌ Terms acceptance failed:', error)
+        return { success: false, error: error.message }
+      }
+
+      console.log('✅ Terms accepted successfully')
+      return { success: true }
+    } catch (error: any) {
+      console.log('💥 Terms acceptance exception:', error)
+      return { success: false, error: error.message }
+    }
+  },
+
+  /**
+   * Check if user has accepted current terms
+   */
+  async checkTermsAcceptance(): Promise<{
+    success: boolean
+    hasAccepted: boolean
+    error?: string
+  }> {
+    const { session } = useAuthStore.getState()
+
+    if (!session?.user) {
+      return {
+        success: false,
+        hasAccepted: false,
+        error: 'No authenticated user',
+      }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('terms_accepted, terms_version, terms_accepted_at')
+        .eq('user_id', session.user.id)
+        .single()
+
+      if (error) {
+        return { success: false, hasAccepted: false, error: error.message }
+      }
+
+      const currentTermsVersion = '1.0'
+      const hasAcceptedCurrentTerms =
+        data.terms_accepted && data.terms_version === currentTermsVersion
+
+      return {
+        success: true,
+        hasAccepted: hasAcceptedCurrentTerms,
+      }
+    } catch (error: any) {
+      return { success: false, hasAccepted: false, error: error.message }
+    }
+  },
+
+  /**
+   * Create user profile with terms requirement
+   */
+  async createProfile(userData: {
+    username: string
+    display_name?: string
+    cooking_level?: string
+    termsAccepted: boolean
+  }): Promise<{ success: boolean; error?: string }> {
+    const { session } = useAuthStore.getState()
+
+    if (!session?.user) {
+      return { success: false, error: 'No authenticated user' }
+    }
+
+    if (!userData.termsAccepted) {
+      return {
+        success: false,
+        error: 'Terms must be accepted to create profile',
+      }
+    }
+
+    try {
+      const profileData = {
+        user_id: session.user.id,
+        username: userData.username,
+        display_name: userData.display_name || userData.username,
+        cooking_level: userData.cooking_level || 'beginner',
+        terms_accepted: true,
+        terms_version: '1.0',
+        terms_accepted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const { error } = await supabase.from('profiles').insert(profileData)
+
+      if (error) {
+        console.log('❌ Profile creation failed:', error)
+        return { success: false, error: error.message }
+      }
+
+      console.log('✅ Profile created successfully with terms acceptance')
+      return { success: true }
+    } catch (error: any) {
+      console.log('💥 Profile creation exception:', error)
+      return { success: false, error: error.message }
+    }
+  },
 }
