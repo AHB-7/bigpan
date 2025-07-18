@@ -40,7 +40,7 @@ export const LoginScreen: React.FC = () => {
       showErrorMethod: 'inline',
       errorMessage:
         'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
-      onSuccess: () => router.replace('/(auth)/onboarding/onboarding'),
+      onSuccess: () => router.replace('/(auth)/onboarding'),
       onShowError: (message) => setLoginError(message),
     })
   }
@@ -164,8 +164,9 @@ export const LoginScreen: React.FC = () => {
             <View style={styles.footer}>
               <Text variant="bodySmall">Har du ikke en konto? </Text>
               <TextLink
-                href={'/(auth)/register'}
+                href={'/ss'}
                 variant="bodySmall"
+                onPress={() => router.push('/(auth)/register')}
                 color={theme.colors.primary}
                 weight="semiBold"
               >

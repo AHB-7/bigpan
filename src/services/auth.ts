@@ -244,15 +244,14 @@ export const authOperations = {
     }
 
     try {
-      // Step 1: The UUIDs are already correct, so we can use them directly
+      // Step 1: Process tag UUIDs
       const allTagIds = Object.values(selectedTags).flat()
       console.log('✅ Using tag UUIDs directly:', allTagIds)
 
       // Step 2: Map difficulty UUID to cooking_level string
-      let cookingLevelString = 'beginner' // Default value
+      let cookingLevelString = 'beginner'
 
       if (selectedTags.difficulty && selectedTags.difficulty.length > 0) {
-        // Get the actual tag data to find the slug/name
         const difficultyTagId = selectedTags.difficulty[0]
 
         try {
@@ -264,14 +263,13 @@ export const authOperations = {
             .single()
 
           if (!tagError && difficultyTag) {
-            // Map slug to the expected cooking_level values
             const slugToCookingLevel: Record<string, string> = {
               beginner: 'beginner',
               intermediate: 'intermediate',
               advanced: 'advanced',
-              nybegynner: 'beginner', // Norwegian
-              øvet: 'intermediate', // Norwegian
-              ekspert: 'advanced', // Norwegian
+              nybegynner: 'beginner',
+              øvet: 'intermediate',
+              ekspert: 'advanced',
             }
 
             cookingLevelString =
@@ -290,8 +288,9 @@ export const authOperations = {
       const allergenTags = selectedTags.allergens || []
       const cuisineTags = selectedTags.cuisine || []
 
+      // Step 4: Update profiles table
       const profileUpdates = {
-        cooking_level: cookingLevelString, // ✅ Use mapped string value
+        cooking_level: cookingLevelString,
         dietary_restrictions: dietaryTags,
         allergens: allergenTags,
         favorite_cuisines: cuisineTags,
@@ -316,26 +315,28 @@ export const authOperations = {
 
       console.log('✅ Profile updated successfully')
 
-      const preferencesUpdates = {
+      // Step 5: Handle user_preferences table with UPSERT
+      const preferencesData = {
+        user_id: session.user.id,
         preferred_filter_tags: allTagIds,
-        blocked_filter_tags: allergenTags, // Block allergen tags for filtering
-        difficulty_preference: cookingLevelString, // ✅ Use mapped string value
+        blocked_filter_tags: allergenTags,
+        difficulty_preference: cookingLevelString,
         updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(), // In case it's a new record
         ...additionalPrefs?.preferences,
       }
 
-      console.log(
-        '🔄 Updating user_preferences table with:',
-        preferencesUpdates
-      )
+      console.log('🔄 Upserting user_preferences table with:', preferencesData)
 
+      // Use UPSERT to insert or update
       const { error: preferencesError } = await supabase
         .from('user_preferences')
-        .update(preferencesUpdates)
-        .eq('user_id', session.user.id)
+        .upsert(preferencesData, {
+          onConflict: 'user_id', // Use user_id as the conflict resolution column
+        })
 
       if (preferencesError) {
-        console.log('❌ Preferences update failed:', preferencesError)
+        console.log('❌ Preferences upsert failed:', preferencesError)
         return {
           success: false,
           error: `Preferences update failed: ${preferencesError.message}`,
@@ -343,7 +344,7 @@ export const authOperations = {
       }
 
       console.log('✅ All updates successful!')
-      return { success: true, data: { profileUpdates, preferencesUpdates } }
+      return { success: true, data: { profileUpdates, preferencesData } }
     } catch (error: any) {
       console.log('💥 updatePreferences exception:', error)
       return { success: false, error: error.message }

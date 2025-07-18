@@ -3,11 +3,13 @@ import { StyleSheet } from 'react-native'
 
 export const styles = StyleSheet.create({
   // -------------------main screen styles-------------------
+
   mainScreen: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 84,
+    paddingHorizontal: theme.spacing.lg,
   },
 
   egg: {
@@ -26,7 +28,6 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    paddingHorizontal: theme.spacing.lg,
   },
 
   keyboardAvoid: {
@@ -35,6 +36,7 @@ export const styles = StyleSheet.create({
 
   scrollContent: {
     flexGrow: 1,
+    paddingHorizontal: theme.spacing.lg,
   },
   formContainer: {
     flex: 1,
@@ -56,8 +58,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-
-  // Footer styles
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -66,28 +66,30 @@ export const styles = StyleSheet.create({
   },
 
   // -------------------onboarding styles -------------------
-
-  onboardingContainer: {
+  containerOnboarding: {
     flex: 1,
+    alignContent: 'center',
+    justifyContent: 'center',
   },
-  onboardingHeader: {
-    marginVertical: theme.spacing.lg,
+  categoryTitle: {
+    textAlign: 'center',
+    marginVertical: theme.spacing.xl,
   },
-  onboardingButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.lg,
-    width: '100%',
+  scrollContentOnboarding: {
+    flexGrow: 1,
+    paddingBottom: theme.spacing.xxl,
+    alignContent: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    justifyContent: 'center',
   },
   tagsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
   },
   buttonsGrow: {
     flexGrow: 1,
-    flexBasis: '48%',
-    maxWidth: '50%',
+    maxWidth: 'auto',
     paddingVertical: theme.spacing.sm,
     marginBottom: theme.spacing.sm,
     borderRadius: 100,
@@ -95,17 +97,18 @@ export const styles = StyleSheet.create({
   progressBar: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: theme.spacing.lg,
+    alignItems: 'center',
+    marginVertical: theme.spacing.sm,
   },
   progressStep: {
-    width: 10,
-    height: 10,
+    width: 40,
+    height: 4,
     borderRadius: 5,
-    backgroundColor: theme.colors.onSurfaceVariant,
-    marginHorizontal: 2,
+    backgroundColor: theme.colors.onSurfaceVariant + '80',
+    marginHorizontal: 1,
   },
   completedStep: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.success,
   },
   activeStep: {
     backgroundColor: theme.colors.primary,

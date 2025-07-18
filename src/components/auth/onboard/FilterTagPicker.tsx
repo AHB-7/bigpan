@@ -6,7 +6,6 @@ import type { Database } from '@/types/supabase'
 import { styles } from '../styles'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']
-
 interface FilterTagPickerProps {
   tags: FilterTag[]
   selectedTagIds: string[]
@@ -32,13 +31,9 @@ export const FilterTagPicker: React.FC<FilterTagPickerProps> = ({
   }
 
   return (
-    <View style={styles.onboardingContainer}>
+    <View>
       {title && (
-        <Text
-          variant="heading2"
-          weight="semiBold"
-          style={styles.onboardingHeader}
-        >
+        <Text variant="heading2" weight="semiBold" style={styles.categoryTitle}>
           {title}
         </Text>
       )}

@@ -64,7 +64,7 @@ export const RegistrerComponent: React.FC = () => {
           'Noe gikk galt under registreringen. Vennligst prøv igjen.',
         successMessage: 'Konto opprettet! Sjekk e-posten din for bekreftelse.',
         onSuccess: () => {
-          router.replace('/(auth)/onboarding/onboarding')
+          router.replace('/(auth)/onboarding')
         },
         onShowError: (message) => setFormError(message),
       }
