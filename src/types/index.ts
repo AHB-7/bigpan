@@ -17,6 +17,8 @@ export type RecipeInteraction =
   Database['public']['Tables']['recipe_interactions']['Row']
 export type UserPreferences =
   Database['public']['Tables']['user_preferences']['Row']
+export type CookingAttempt =
+  Database['public']['Tables']['cooking_attempts']['Row']
 
 // ===== INSERT TYPES FOR FORMS =====
 export type CreateUserData = Database['public']['Tables']['profiles']['Insert']
@@ -33,6 +35,83 @@ export type UpdateRecipeData = Database['public']['Tables']['recipes']['Update']
 export type UpdateUserPreferencesData =
   Database['public']['Tables']['user_preferences']['Update']
 
+// ===== ENHANCED PROFILE TYPES =====
+// Based on the database functions in your Supabase schema
+
+export interface ProfileStats {
+  // Recipe Statistics (from get_user_recipe_stats function)
+  recipes_total: number
+  recipes_published: number
+  recipes_draft: number
+  recipes_archived: number
+  total_views: number
+  total_likes: number
+  total_saves: number
+  avg_rating: number
+  total_prep_time: number
+  total_cook_time: number
+
+  // Social Statistics (from get_user_social_stats_safe function)
+  followers_count: number
+  following_count: number
+  friends_count: number
+  cooking_attempts_count: number
+  groups_joined: number
+  challenges_completed: number
+
+  // Collection Statistics (from get_user_collection_stats function)
+  collections_total: number
+  collections_personal: number
+  collections_collaborative: number
+  collections_meal_plans: number
+  total_recipes_in_collections: number
+  avg_collection_rating: number
+}
+
+export interface RecentRecipe {
+  id: string
+  title: string
+  slug: string
+  image_url: string | null
+  created_at: string
+  like_count: number
+  view_count: number
+  status: string
+  difficulty_level: string
+}
+
+export interface PopularRecipe {
+  id: string
+  title: string
+  slug: string
+  image_url: string | null
+  view_count: number
+  like_count: number
+  average_rating: number
+}
+
+export interface RecentCollection {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  cover_image_url: string | null
+  recipe_count: number
+  collection_type: string
+  is_meal_plan: boolean
+  created_at: string
+}
+
+// Enhanced user profile that matches get_user_profile_with_stats_safe function return
+export interface EnhancedUserProfile extends UserWithStats {
+  stats: ProfileStats
+  recent_recipes: RecentRecipe[]
+  popular_recipes: PopularRecipe[]
+  recent_collections: RecentCollection[]
+  generated_at: string
+}
+
+// ===== EXISTING ENHANCED TYPES =====
 export type RecipeWithDetails = Recipe & {
   author?: User
   ingredients?: RecipeIngredient[]
@@ -61,6 +140,23 @@ export type CollectionWithRecipes = RecipeCollection & {
   recipes?: RecipeWithDetails[]
 }
 
+// ===== DATABASE FUNCTION TYPES =====
+// These match the return types of your Supabase functions
+
+export type UserRecipeCount =
+  Database['public']['Functions']['get_user_recipe_count']['Returns']
+export type UserBasicStats =
+  Database['public']['Functions']['get_user_basic_stats_v2']['Returns']
+export type UserRecipeStats =
+  Database['public']['Functions']['get_user_recipe_stats']['Returns']
+export type UserSocialStats =
+  Database['public']['Functions']['get_user_social_stats_safe']['Returns']
+export type UserCollectionStats =
+  Database['public']['Functions']['get_user_collection_stats']['Returns']
+export type UserProfileWithStats =
+  Database['public']['Functions']['get_user_profile_with_stats_safe']['Returns']
+
+// ===== PREFERENCE INTERFACES =====
 export interface NotificationPreferences {
   recipe_interactions?: boolean
   friend_activities?: boolean
@@ -98,6 +194,7 @@ export interface UserPreferencesTyped
   meal_planning_preferences?: MealPlanningPreferences
 }
 
+// ===== FORM DATA INTERFACES =====
 export interface LoginFormData {
   email: string
   password: string
@@ -157,6 +254,7 @@ export interface UserPreferencesFormData {
   meal_planning_preferences?: MealPlanningPreferences
 }
 
+// ===== API RESPONSE INTERFACES =====
 export interface ApiResponse<T> {
   data: T
   error?: string
@@ -173,6 +271,7 @@ export interface PaginatedResponse<T> {
   has_more: boolean
 }
 
+// ===== STATE INTERFACES =====
 export interface AuthState {
   user: User | null
   session: any | null
@@ -209,6 +308,7 @@ export interface SocialState {
   selectedGroup: GroupWithMembers | null
 }
 
+// ===== ROUTE PARAM INTERFACES =====
 export interface RecipeParams {
   id: string
   servings?: string
@@ -231,7 +331,7 @@ export interface GroupParams {
 export type RecipeStatus = Recipe['status']
 export type RecipeVisibility = Recipe['visibility']
 export type UserRole = GroupMembership['role']
-export type NotificationType = Notification['notification_type'] // Fixed: use actual field name
+export type NotificationType = Notification['notification_type']
 export type CookingLevel = User['cooking_level']
 export type DifficultyLevel = Recipe['difficulty_level']
 

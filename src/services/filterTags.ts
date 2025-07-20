@@ -3,7 +3,6 @@ import type { Database } from '@/types/supabase'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']
 
-// Define the category type based on your check constraint
 export type FilterTagCategory =
   | 'dietary'
   | 'cuisine'
@@ -28,9 +27,6 @@ export interface FilterTagsGrouped {
 }
 
 export const filterTagsService = {
-  /**
-   * Get all active filter tags
-   */
   async getAllTags(): Promise<{
     data: FilterTag[] | null
     error: string | null
@@ -52,9 +48,6 @@ export const filterTagsService = {
     }
   },
 
-  /**
-   * Get filter tags by category
-   */
   async getTagsByCategory(
     category: FilterTagCategory
   ): Promise<{ data: FilterTag[] | null; error: string | null }> {
@@ -76,9 +69,6 @@ export const filterTagsService = {
     }
   },
 
-  /**
-   * Get multiple categories at once - perfect for onboarding
-   */
   async getTagsByCategories(
     categories: FilterTagCategory[]
   ): Promise<{ data: FilterTagsGrouped | null; error: string | null }> {
@@ -94,7 +84,6 @@ export const filterTagsService = {
         return { data: null, error: error.message }
       }
 
-      // Group by category
       const grouped: any = {}
       categories.forEach((category) => {
         grouped[category] =
@@ -107,9 +96,6 @@ export const filterTagsService = {
     }
   },
 
-  /**
-   * Get tags by their IDs - useful for displaying user's selected tags
-   */
   async getTagsByIds(
     tagIds: string[]
   ): Promise<{ data: FilterTag[] | null; error: string | null }> {
@@ -134,9 +120,6 @@ export const filterTagsService = {
     }
   },
 
-  /**
-   * Search filter tags - useful for recipe filtering
-   */
   async searchTags(
     query: string,
     categories?: FilterTagCategory[]
@@ -167,9 +150,6 @@ export const filterTagsService = {
     }
   },
 
-  /**
-   * Map tag slugs to UUIDs - for onboarding data conversion
-   */
   async mapSlugsToIds(
     slugs: string[]
   ): Promise<{ data: string[] | null; error: string | null }> {

@@ -1,4 +1,4 @@
-import { View } from 'react-native'
+import { Image, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button, Text } from '../common'
 import { styles } from './styles'
@@ -8,8 +8,17 @@ export default function StartComponent() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainScreen}>
-        <Text style={styles.egg}>🍳</Text>
-        <Text variant="heading1">Vellkommen til BigPan</Text>
+        <Image
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel="BigPan Logo"
+          source={require('../../../assets/images/logo.png')}
+        />
+
+        <Text variant="heading3" weight="light">
+          BigPan hjelper deg med å finne svar på hverdagens mat utfordringer.
+        </Text>
+
         <View style={styles.buttonsContainer}>
           <Button onPress={() => router.push('/(auth)/login')}>
             Kom i gang

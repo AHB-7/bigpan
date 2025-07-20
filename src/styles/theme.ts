@@ -4,9 +4,9 @@ export const theme = {
   ...typography,
   colors: {
     // Primary - Food/Cooking inspired
-    primary: '#e7521cff', 
-    primaryLight: '#FF8A65',
-    primaryDark: '#E64A19',
+    primary: '#FF6B35',
+    primaryLight: '#fd7d4eff',
+    primaryDark: '#ffa382ff',
 
     // Secondary - Fresh greens
     secondary: '#4CAF50',
@@ -14,14 +14,14 @@ export const theme = {
     secondaryDark: '#388E3C',
 
     // Neutrals
-    background: '#fcf7f7ff',
-    surface: '#FFFFFF',
-    surfaceVariant: '#F5F5F5',
+    background: '#FFFDF6',
+    surface: '#fffbf9ff',
+    surfaceVariant: '#fffbedff',
 
     // Text
-    onBackground: '#212121',
-    onSurface: '#424242',
-    onSurfaceVariant: '#757575',
+    onBackground: '#292929',
+    onSurface: '#323232ff',
+    onSurfaceVariant: '#414141ff',
 
     // Semantic
     success: '#4CAF50',
@@ -40,6 +40,7 @@ export const theme = {
     sm: 8,
     m: 12,
     md: 16,
+    l: 20,
     lg: 24,
     xl: 32,
     xxl: 48,

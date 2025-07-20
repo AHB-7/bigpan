@@ -1,13 +1,9 @@
-// File: src/hooks/useFilterTags.ts
 import { useState, useEffect } from 'react'
 import { FilterTagCategory, filterTagsService } from '@/services/filterTags'
 import type { Database } from '@/types/supabase'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']
 
-/**
- * Hook to fetch and manage filter tags for any category
- */
 export const useFilterTags = (category?: FilterTagCategory) => {
   const [tags, setTags] = useState<FilterTag[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,9 +32,6 @@ export const useFilterTags = (category?: FilterTagCategory) => {
   return { tags, loading, error, refetch: () => fetchTags() }
 }
 
-/**
- * Hook to fetch multiple categories at once - perfect for onboarding
- */
 export const useFilterTagsGrouped = (categories: FilterTagCategory[]) => {
   const [tagsGrouped, setTagsGrouped] = useState<any>({})
   const [loading, setLoading] = useState(true)
@@ -67,9 +60,6 @@ export const useFilterTagsGrouped = (categories: FilterTagCategory[]) => {
   return { tagsGrouped, loading, error }
 }
 
-/**
- * Hook to get user's selected tags by IDs
- */
 export const useUserSelectedTags = (tagIds: string[]) => {
   const [selectedTags, setSelectedTags] = useState<FilterTag[]>([])
   const [loading, setLoading] = useState(true)

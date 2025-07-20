@@ -39,7 +39,7 @@ export const Button: React.FC<ButtonProps> = ({
       borderWidth: 1,
       borderColor: disabled ? '#CCCCCC' : theme.colors.primary,
       paddingHorizontal: theme.spacing.lg,
-      borderRadius: theme.borderRadius.md,
+      borderRadius: 100,
       alignItems: 'center' as const,
     },
     outlined: {
@@ -48,7 +48,7 @@ export const Button: React.FC<ButtonProps> = ({
       borderColor: disabled ? '#CCCCCC' : theme.colors.primary,
       paddingVertical: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
-      borderRadius: theme.borderRadius.md,
+      borderRadius: 100,
       alignItems: 'center' as const,
     },
     text: {

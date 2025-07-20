@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '12.2.3 (519615d)'
+    PostgrestVersion: "12.2.3 (519615d)"
   }
   public: {
     Tables: {
@@ -44,11 +44,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'activity_interactions_activity_id_fkey'
-            columns: ['activity_id']
+            foreignKeyName: "activity_interactions_activity_id_fkey"
+            columns: ["activity_id"]
             isOneToOne: false
-            referencedRelation: 'user_activities'
-            referencedColumns: ['id']
+            referencedRelation: "user_activities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -112,18 +112,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'challenge_participants_challenge_id_fkey'
-            columns: ['challenge_id']
+            foreignKeyName: "challenge_participants_challenge_id_fkey"
+            columns: ["challenge_id"]
             isOneToOne: false
-            referencedRelation: 'group_challenges'
-            referencedColumns: ['id']
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'challenge_participants_submission_recipe_id_fkey'
-            columns: ['submission_recipe_id']
+            foreignKeyName: "challenge_participants_submission_recipe_id_fkey"
+            columns: ["submission_recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -187,18 +187,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'collection_recipes_collection_id_fkey'
-            columns: ['collection_id']
+            foreignKeyName: "collection_recipes_collection_id_fkey"
+            columns: ["collection_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_collections'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_collections"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'collection_recipes_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "collection_recipes_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -262,11 +262,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'collection_shopping_lists_collection_id_fkey'
-            columns: ['collection_id']
+            foreignKeyName: "collection_shopping_lists_collection_id_fkey"
+            columns: ["collection_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_collections'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_collections"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -345,11 +345,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cooking_attempts_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "cooking_attempts_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -413,18 +413,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cooking_timers_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "cooking_timers_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cooking_timers_step_id_fkey'
-            columns: ['step_id']
+            foreignKeyName: "cooking_timers_step_id_fkey"
+            columns: ["step_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_steps'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_steps"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -476,11 +476,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'filter_tags_parent_id_fkey'
-            columns: ['parent_id']
+            foreignKeyName: "filter_tags_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: 'filter_tags'
-            referencedColumns: ['id']
+            referencedRelation: "filter_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -553,11 +553,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'group_challenges_group_id_fkey'
-            columns: ['group_id']
+            foreignKeyName: "group_challenges_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: 'user_groups'
-            referencedColumns: ['id']
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -603,11 +603,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'group_invitations_group_id_fkey'
-            columns: ['group_id']
+            foreignKeyName: "group_invitations_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: 'user_groups'
-            referencedColumns: ['id']
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -680,11 +680,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'group_memberships_group_id_fkey'
-            columns: ['group_id']
+            foreignKeyName: "group_memberships_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: 'user_groups'
-            referencedColumns: ['id']
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -892,25 +892,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'notifications_related_collection_id_fkey'
-            columns: ['related_collection_id']
+            foreignKeyName: "notifications_related_collection_id_fkey"
+            columns: ["related_collection_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_collections'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_collections"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notifications_related_group_id_fkey'
-            columns: ['related_group_id']
+            foreignKeyName: "notifications_related_group_id_fkey"
+            columns: ["related_group_id"]
             isOneToOne: false
-            referencedRelation: 'user_groups'
-            referencedColumns: ['id']
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notifications_related_recipe_id_fkey'
-            columns: ['related_recipe_id']
+            foreignKeyName: "notifications_related_recipe_id_fkey"
+            columns: ["related_recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -928,6 +928,9 @@ export type Database = {
           is_verified: boolean | null
           location: string | null
           privacy_settings: Json | null
+          terms_accepted: boolean
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string | null
           user_id: string
           username: string
@@ -945,6 +948,9 @@ export type Database = {
           is_verified?: boolean | null
           location?: string | null
           privacy_settings?: Json | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string | null
           user_id: string
           username: string
@@ -962,6 +968,9 @@ export type Database = {
           is_verified?: boolean | null
           location?: string | null
           privacy_settings?: Json | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string | null
           user_id?: string
           username?: string
@@ -1016,11 +1025,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_categories_parent_id_fkey'
-            columns: ['parent_id']
+            foreignKeyName: "recipe_categories_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_categories'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_categories"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1186,11 +1195,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_ingredients_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1248,11 +1257,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_interactions_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "recipe_interactions_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1331,18 +1340,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_ratings_interaction_id_fkey'
-            columns: ['interaction_id']
+            foreignKeyName: "recipe_ratings_interaction_id_fkey"
+            columns: ["interaction_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_interactions'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_interactions"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'recipe_ratings_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "recipe_ratings_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1397,11 +1406,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_shares_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "recipe_shares_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1507,11 +1516,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipe_steps_recipe_id_fkey'
-            columns: ['recipe_id']
+            foreignKeyName: "recipe_steps_recipe_id_fkey"
+            columns: ["recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1644,18 +1653,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'recipes_category_id_fkey'
-            columns: ['category_id']
+            foreignKeyName: "recipes_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_categories'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_categories"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'recipes_parent_recipe_id_fkey'
-            columns: ['parent_recipe_id']
+            foreignKeyName: "recipes_parent_recipe_id_fkey"
+            columns: ["parent_recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1719,11 +1728,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'shopping_list_items_shopping_list_id_fkey'
-            columns: ['shopping_list_id']
+            foreignKeyName: "shopping_list_items_shopping_list_id_fkey"
+            columns: ["shopping_list_id"]
             isOneToOne: false
-            referencedRelation: 'collection_shopping_lists'
-            referencedColumns: ['id']
+            referencedRelation: "collection_shopping_lists"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1781,11 +1790,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'step_attachments_step_id_fkey'
-            columns: ['step_id']
+            foreignKeyName: "step_attachments_step_id_fkey"
+            columns: ["step_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_steps'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_steps"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1819,18 +1828,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'tag_relationships_child_tag_id_fkey'
-            columns: ['child_tag_id']
+            foreignKeyName: "tag_relationships_child_tag_id_fkey"
+            columns: ["child_tag_id"]
             isOneToOne: false
-            referencedRelation: 'filter_tags'
-            referencedColumns: ['id']
+            referencedRelation: "filter_tags"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'tag_relationships_parent_tag_id_fkey'
-            columns: ['parent_tag_id']
+            foreignKeyName: "tag_relationships_parent_tag_id_fkey"
+            columns: ["parent_tag_id"]
             isOneToOne: false
-            referencedRelation: 'filter_tags'
-            referencedColumns: ['id']
+            referencedRelation: "filter_tags"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1930,25 +1939,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'user_activities_related_collection_id_fkey'
-            columns: ['related_collection_id']
+            foreignKeyName: "user_activities_related_collection_id_fkey"
+            columns: ["related_collection_id"]
             isOneToOne: false
-            referencedRelation: 'recipe_collections'
-            referencedColumns: ['id']
+            referencedRelation: "recipe_collections"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'user_activities_related_group_id_fkey'
-            columns: ['related_group_id']
+            foreignKeyName: "user_activities_related_group_id_fkey"
+            columns: ["related_group_id"]
             isOneToOne: false
-            referencedRelation: 'user_groups'
-            referencedColumns: ['id']
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'user_activities_related_recipe_id_fkey'
-            columns: ['related_recipe_id']
+            foreignKeyName: "user_activities_related_recipe_id_fkey"
+            columns: ["related_recipe_id"]
             isOneToOne: false
-            referencedRelation: 'recipes'
-            referencedColumns: ['id']
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2309,6 +2318,14 @@ export type Database = {
           comment_count: number
         }[]
       }
+      get_user_basic_stats_v2: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
+      get_user_collection_stats: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
       get_user_friends: {
         Args: { user_id_param: string }
         Returns: {
@@ -2320,6 +2337,14 @@ export type Database = {
           last_interaction_at: string
         }[]
       }
+      get_user_profile_with_stats_safe: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
+      get_user_recipe_count: {
+        Args: { user_id_param: string }
+        Returns: number
+      }
       get_user_recipe_interactions: {
         Args: { user_id_param: string; recipe_id_param: string }
         Returns: {
@@ -2327,6 +2352,14 @@ export type Database = {
           rating: number
           created_at: string
         }[]
+      }
+      get_user_recipe_stats: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
+      get_user_social_stats_safe: {
+        Args: { user_id_param: string }
+        Returns: Json
       }
       group_similar_notifications: {
         Args: Record<PropertyKey, never>
@@ -2420,6 +2453,10 @@ export type Database = {
         Args: { recipe_id_param: string }
         Returns: undefined
       }
+      user_has_accepted_current_terms: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
       validate_step_sequence: {
         Args: { recipe_id_param: string }
         Returns: boolean
@@ -2434,33 +2471,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -2469,23 +2506,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -2494,23 +2531,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -2519,36 +2556,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

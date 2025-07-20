@@ -8,19 +8,17 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 84,
     paddingHorizontal: theme.spacing.lg,
+    gap: theme.spacing.xl,
   },
-
-  egg: {
-    fontSize: 124,
-    color: theme.colors.primary,
+  logo: {
+    width: 160,
+    height: 160,
   },
   buttonsContainer: {
     width: '100%',
     marginTop: 64,
-    gap: 12,
-    marginBottom: theme.spacing.xxl,
+    gap: theme.spacing.md,
   },
 
   // -------------------login screen styles-------------------
@@ -43,10 +41,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: theme.spacing.xxl,
   },
-  header: {
-    marginVertical: theme.spacing.xxl,
+  headerContainer: {
+    borderLeftColor: theme.colors.primary,
+    borderLeftWidth: 10,
+    paddingLeft: theme.spacing.sm,
+    marginBottom: 64,
   },
-
   forgotPassword: {
     alignSelf: 'flex-end',
     marginBottom: theme.spacing.xl,

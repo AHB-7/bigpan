@@ -1,56 +1,105 @@
+// app/user/[id].tsx - Simplified UserPage using small components
 import React, { useEffect, useState } from 'react'
 import { View, ScrollView } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text, Button, LoadingSpinner } from '@/components/common'
+import { Text, LoadingSpinner } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
+import { useAsyncFunction } from '@/hooks/asyncFunction'
+import { profileService, type EnhancedUserProfile } from '@/services/profile'
 import { theme } from '@/styles/theme'
-import type { User } from '@/types'
+
+// Import all the small components
+import {
+  ProfileHeader,
+  ProfileStats,
+  ProfileInfo,
+  RecentRecipes,
+  ProfileActions,
+} from '@/components/profile/profileParts'
 
 export default function UserPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { user: currentUser, getCurrentUserProfile, signOut } = useAuth()
-  const [profileData, setProfileData] = useState<User | null>(null)
+  const { user: currentUser, signOut } = useAuth()
+  const { executeSupabase } = useAsyncFunction()
+  const [profileData, setProfileData] = useState<EnhancedUserProfile | null>(
+    null
+  )
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Check if this is the current user's profile
   const isOwnProfile = currentUser?.id === id || currentUser?.user_id === id
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (isOwnProfile) {
-        // Load current user's full profile
-        const { data, error } = await getCurrentUserProfile()
-        if (data) {
-          setProfileData(data)
-        } else {
-          console.log('Profile error:', error)
-        }
-      } else {
-        // For other users, you'd load their public profile here
-        // For now, just show basic info
-        setProfileData(null)
+      if (!id) {
+        setError('No user ID provided')
+        setLoading(false)
+        return
       }
+
+      setLoading(true)
+      setError(null)
+
+      if (isOwnProfile) {
+        await executeSupabase(
+          () => profileService.getCurrentUserEnhancedProfile(),
+          {
+            showErrorMethod: 'none',
+            onSuccess: (data) => setProfileData(data || null),
+            onError: (err) => {
+              setError('Could not load profile')
+              console.error('Profile load error:', err)
+            },
+          }
+        )
+      } else {
+        await executeSupabase(() => profileService.getEnhancedProfile(id), {
+          showErrorMethod: 'none',
+          onSuccess: (data) => {
+            if (data && currentUser?.id) {
+              profileService
+                .updateRelationshipStatus(data, currentUser.id)
+                .then((updatedProfile) => setProfileData(updatedProfile))
+            } else {
+              setProfileData(data || null)
+            }
+          },
+          onError: (err) => {
+            setError('Profile not available')
+            console.error('Public profile load error:', err)
+          },
+        })
+      }
+
       setLoading(false)
     }
 
     loadProfile()
-  }, [id, isOwnProfile])
+  }, [id, isOwnProfile, currentUser])
 
   const handleSignOut = async () => {
-    const result = await signOut()
-    if (result.success) {
-      router.replace('/(auth)/login')
-    }
+    await executeSupabase(() => signOut(), {
+      showErrorMethod: 'alert',
+      successMessage: 'Logged out successfully',
+      onSuccess: () => router.replace('/(auth)/login'),
+    })
   }
 
+  // Loading state
   if (loading) {
     return (
       <SafeAreaView
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.colors.background,
+        }}
       >
         <LoadingSpinner />
-        <Text variant="body" style={{ marginTop: 16 }}>
+        <Text variant="body" style={{ marginTop: theme.spacing.md }}>
           Laster profil...
         </Text>
       </SafeAreaView>
@@ -59,112 +108,55 @@ export default function UserPage() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <ScrollView style={{ flex: 1, padding: theme.spacing.lg }}>
-        <View style={{ alignItems: 'center', marginBottom: theme.spacing.xl }}>
-          <Text variant="heading1" style={{ marginBottom: theme.spacing.sm }}>
-            {isOwnProfile ? 'Min Profil' : 'Brukerprofil'}
-          </Text>
-
+      <ScrollView
+        style={{ flex: 1, padding: theme.spacing.md }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ alignItems: 'center', marginBottom: theme.spacing.sm }}>
+          {/* Profile Content */}
           {profileData ? (
             <>
-              <Text
-                variant="heading2"
-                style={{ marginBottom: theme.spacing.md }}
-              >
-                {profileData.display_name || profileData.username}
-              </Text>
+              <ProfileHeader
+                profile={profileData}
+                isOwnProfile={isOwnProfile}
+              />
 
-              <View style={{ width: '100%', marginBottom: theme.spacing.lg }}>
-                <Text
-                  variant="heading3"
-                  style={{ marginBottom: theme.spacing.sm }}
-                >
-                  Profilinformasjon
-                </Text>
+              <ProfileInfo profile={profileData} />
 
-                <View style={{ marginBottom: theme.spacing.sm }}>
-                  <Text variant="label">Brukernavn:</Text>
-                  <Text variant="body">{profileData.username}</Text>
-                </View>
+              <RecentRecipes recipes={profileData.recent_recipes} />
 
-                <View style={{ marginBottom: theme.spacing.sm }}>
-                  <Text variant="label">Kokkenivå:</Text>
-                  <Text variant="body">
-                    {profileData.cooking_level || 'Ikke satt'}
-                  </Text>
-                </View>
-
-                {profileData.bio && (
-                  <View style={{ marginBottom: theme.spacing.sm }}>
-                    <Text variant="label">Bio:</Text>
-                    <Text variant="body">{profileData.bio}</Text>
-                  </View>
-                )}
-
-                {profileData.dietary_restrictions &&
-                  profileData.dietary_restrictions.length > 0 && (
-                    <View style={{ marginBottom: theme.spacing.sm }}>
-                      <Text variant="label">Kosthold:</Text>
-                      <Text variant="body">
-                        {profileData.dietary_restrictions.length} valgte
-                        preferanser
-                      </Text>
-                    </View>
-                  )}
-
-                {profileData.favorite_cuisines &&
-                  profileData.favorite_cuisines.length > 0 && (
-                    <View style={{ marginBottom: theme.spacing.sm }}>
-                      <Text variant="label">Favorittkjøkken:</Text>
-                      <Text variant="body">
-                        {profileData.favorite_cuisines.length} valgte kjøkken
-                      </Text>
-                    </View>
-                  )}
-              </View>
+              {isOwnProfile && <ProfileActions onSignOut={handleSignOut} />}
             </>
           ) : (
-            <>
+            /* Error State */
+            <View
+              style={{
+                alignItems: 'center',
+                padding: theme.spacing.xl,
+                backgroundColor: theme.colors.surface,
+                borderRadius: theme.borderRadius.lg,
+                width: '100%',
+              }}
+            >
               <Text
                 variant="heading2"
                 style={{ marginBottom: theme.spacing.md }}
               >
-                Bruker {id}
+                {error ? '⚠️ Feil' : `👤 Bruker ${id}`}
               </Text>
               <Text
                 variant="body"
-                style={{ textAlign: 'center', marginBottom: theme.spacing.lg }}
+                style={{
+                  textAlign: 'center',
+                  marginBottom: theme.spacing.lg,
+                  color: theme.colors.onSurfaceVariant,
+                }}
               >
-                {isOwnProfile
-                  ? 'Kunne ikke laste din profil'
-                  : 'Offentlig profil ikke tilgjengelig'}
+                {error ||
+                  (isOwnProfile
+                    ? 'Kunne ikke laste din profil'
+                    : 'Profil ikke tilgjengelig')}
               </Text>
-            </>
-          )}
-
-          {isOwnProfile && (
-            <View style={{ width: '100%', gap: theme.spacing.md }}>
-              <Button
-                variant="outlined"
-                onPress={() => router.push('/profile/edit')}
-              >
-                Rediger profil
-              </Button>
-
-              <Button
-                variant="outlined"
-                onPress={() => router.push('/(auth)/onboarding')}
-              >
-                Oppdater preferanser
-              </Button>
-
-              <Button
-                variant="text"
-                onPress={handleSignOut}
-                textColor={theme.colors.error}
-              >
-                Logg ut
-              </Button>
             </View>
           )}
         </View>

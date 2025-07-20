@@ -89,9 +89,11 @@ export const RegistrerComponent: React.FC = () => {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.formContainer}>
-              <Text weight="semiBold" variant="heading1" style={styles.header}>
-                Opprett konto
-              </Text>
+              <View style={styles.headerContainer}>
+                <Text weight="black" variant="heading1">
+                  Opprett konto
+                </Text>
+              </View>
 
               <Controller
                 control={control}

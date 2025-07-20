@@ -41,9 +41,7 @@ export const LoginScreen: React.FC = () => {
       errorMessage:
         'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
       onSuccess: () => {
-        user?.id
-          ? router.replace(`/user/${user.id}`)
-          : router.replace('/(auth)/onboarding')
+        user?.id && router.replace(`/user/${user.id}`)
       },
       onShowError: (message) => setLoginError(message),
     })
@@ -65,9 +63,11 @@ export const LoginScreen: React.FC = () => {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.formContainer}>
-              <Text weight="semiBold" variant="heading1" style={styles.header}>
-                Logg Inn
-              </Text>
+              <View style={styles.headerContainer}>
+                <Text weight="black" variant="heading1">
+                  Logg Inn
+                </Text>
+              </View>
 
               <Controller
                 control={control}
