@@ -15,7 +15,6 @@ import {
   ProfileStats,
   ProfileInfo,
   RecentRecipes,
-  ProfileActions,
 } from '@/components/profile/profileParts'
 
 export default function UserPage() {
@@ -124,8 +123,6 @@ export default function UserPage() {
               <ProfileInfo profile={profileData} />
 
               <RecentRecipes recipes={profileData.recent_recipes} />
-
-              {isOwnProfile && <ProfileActions onSignOut={handleSignOut} />}
             </>
           ) : (
             /* Error State */

@@ -7,6 +7,7 @@ import { theme } from '@/styles/theme'
 import type { EnhancedUserProfile } from '@/types'
 import { styles } from './styles'
 import { Ionicons, MaterialIcons } from '@expo/vector-icons'
+import { ProfileStats } from './ProfileStats'
 
 interface ProfileHeaderProps {
   profile: EnhancedUserProfile
@@ -22,44 +23,24 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <ProfileAvatar
         avatar_url={profile.avatar_url}
         name={profile.display_name || profile.username}
+        level={profile.cooking_level}
       />
 
-      <Text variant="heading3">{profile.display_name || profile.username}</Text>
-
-      {profile.bio && <Text variant="body">{profile.bio}</Text>}
-      <View style={styles.headerStatsContainer}>
-        <View style={styles.headerStats}>
-          <Ionicons name="newspaper-outline" style={styles.headerStatsIcon} />
-          <Text variant="body">{profile.stats.recipes_published}</Text>
-        </View>
-        <View style={styles.headerStats}>
-          <Ionicons name="heart" style={styles.headerStatsIcon} />
-          <Text variant="body">{profile.stats.total_likes}</Text>
-        </View>
-        <View style={styles.headerStats}>
-          <Ionicons name="people-outline" style={styles.headerStatsIcon} />
-          <Text variant="body">
-            {profile.stats.followers_count + profile.stats.friends_count}
-          </Text>
-        </View>
-        <View style={styles.headerStats}>
-          <Ionicons name="eye" style={styles.headerStatsIcon} />
-          <Text variant="body">{profile.stats.total_views} </Text>
-        </View>
-        <View style={styles.headerStats}>
-          <Ionicons name="star" style={styles.headerStatsIcon} />
-          <Text variant="body">{profile.stats.avg_rating.toFixed(1)}</Text>
-        </View>
-      </View>
+      <Text variant="heading2" weight="bold">
+        {profile.display_name || profile.username}
+      </Text>
+      <Text variant="label" weight="regular" color={theme.colors.onSurface}>
+        {profile.cooking_level}
+      </Text>
+      <ProfileStats stats={profile.stats} />
+      {/* Later Fix */}
       {!isOwnProfile && (
         <RelationshipBadges
           is_friend={profile.is_friend}
           is_following={profile.is_following}
         />
       )}
-      {isOwnProfile && (
-        <MaterialIcons name="play-arrow" style={styles.settingIcon} />
-      )}
+      {isOwnProfile && <Ionicons name="settings" style={styles.settingIcon} />}
     </View>
   )
 }
