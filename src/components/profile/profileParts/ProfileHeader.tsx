@@ -6,8 +6,9 @@ import { RelationshipBadges } from './RelationshipBadges'
 import { theme } from '@/styles/theme'
 import type { EnhancedUserProfile } from '@/types'
 import { styles } from './styles'
-import { Ionicons, MaterialIcons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { ProfileStats } from './ProfileStats'
+import { BigBtn } from './Btn'
 
 interface ProfileHeaderProps {
   profile: EnhancedUserProfile
@@ -40,7 +41,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           is_following={profile.is_following}
         />
       )}
-      {isOwnProfile && <Ionicons name="settings" style={styles.settingIcon} />}
+      {isOwnProfile && (
+        <>
+          <Ionicons name="settings" style={styles.settingIcon} />
+          <BigBtn />
+        </>
+      )}
     </View>
   )
 }

@@ -61,4 +61,43 @@ export const styles = StyleSheet.create({
   headerStatsIcon: {
     fontSize: 32,
   },
+  bigBtnContainer: {
+    width: '100%',
+    marginTop: theme.spacing.lg,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    gap: theme.spacing.md,
+  },
+  bigBtn: {
+    flexDirection: 'row',
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: theme.spacing.lg,
+    gap: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.onBackground,
+    height: 120,
+  },
+  bigBtnText: {
+    marginLeft: theme.spacing.sm,
+    color: theme.colors.background,
+  },
+  bigBtnIcon: {
+    fontSize: 64,
+    color: theme.colors.primary,
+  },
+  addBtnContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    flexGrow: 1,
+  },
+  addBtnIcon: {
+    fontSize: 32,
+    color: theme.colors.background,
+  },
 })

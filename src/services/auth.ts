@@ -1,3 +1,4 @@
+// src/services/auth.ts - Fixed version to prevent logout on hot reload
 import { authService } from './supabase/auth'
 import { supabase } from './supabase/client'
 import { useAuthStore } from '@/stores/authStore'
@@ -128,27 +129,45 @@ export const authOperations = {
   },
 
   async initializeAuth() {
-    const { setLoading, setSession } = useAuthStore.getState()
+    const { setLoading, setSession, setInitialized, session, isInitialized } =
+      useAuthStore.getState()
+
+    // If already initialized and we have a session, don't reinitialize
+    if (isInitialized && session) {
+      console.log('Auth already initialized, skipping...')
+      return { success: true, subscription: null }
+    }
 
     try {
-      setLoading(true)
-
-      const { session } = await authService.getSession()
-      if (session) {
-        setSession(session)
+      // Only set loading if we're not already initialized
+      if (!isInitialized) {
+        setLoading(true)
       }
 
+      const { session: currentSession } = await authService.getSession()
+      if (currentSession) {
+        setSession(currentSession)
+      }
+
+      // Set up auth state listener
       const {
         data: { subscription },
       } = authService.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id)
         setSession(session)
       })
 
+      // Mark as initialized
+      setInitialized(true)
+
       return { success: true, subscription }
     } catch (error) {
+      console.error('Failed to initialize auth:', error)
       return { success: false, error: 'Failed to initialize authentication' }
     } finally {
-      setLoading(false)
+      if (!isInitialized) {
+        setLoading(false)
+      }
     }
   },
 

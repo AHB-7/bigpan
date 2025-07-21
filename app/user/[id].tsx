@@ -1,7 +1,7 @@
 // app/user/[id].tsx - Simplified UserPage using small components
 import React, { useEffect, useState } from 'react'
 import { View, ScrollView } from 'react-native'
-import { useLocalSearchParams, router } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text, LoadingSpinner } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,12 +10,7 @@ import { profileService, type EnhancedUserProfile } from '@/services/profile'
 import { theme } from '@/styles/theme'
 
 // Import all the small components
-import {
-  ProfileHeader,
-  ProfileStats,
-  ProfileInfo,
-  RecentRecipes,
-} from '@/components/profile/profileParts'
+import { ProfileHeader, RecentRecipes } from '@/components/profile/profileParts'
 
 export default function UserPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -78,14 +73,6 @@ export default function UserPage() {
     loadProfile()
   }, [id, isOwnProfile, currentUser])
 
-  const handleSignOut = async () => {
-    await executeSupabase(() => signOut(), {
-      showErrorMethod: 'alert',
-      successMessage: 'Logged out successfully',
-      onSuccess: () => router.replace('/(auth)/login'),
-    })
-  }
-
   // Loading state
   if (loading) {
     return (
@@ -119,8 +106,6 @@ export default function UserPage() {
                 profile={profileData}
                 isOwnProfile={isOwnProfile}
               />
-
-              <ProfileInfo profile={profileData} />
 
               <RecentRecipes recipes={profileData.recent_recipes} />
             </>

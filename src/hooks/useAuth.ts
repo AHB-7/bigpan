@@ -1,5 +1,7 @@
+// src/hooks/useAuth.ts - Fixed version
 import { useAuthStore } from '@/stores/authStore'
 import { authOperations } from '@/services/auth'
+
 export const useAuth = () => {
   const store = useAuthStore()
 
@@ -10,10 +12,11 @@ export const useAuth = () => {
     preferences: store.preferences,
     isLoading: store.isLoading,
     isAuthenticated: store.isAuthenticated,
+    isInitialized: store.isInitialized, // Expose this
 
     // Operations - expects (email, password, username)
     signIn: authOperations.signIn,
-    signUp: authOperations.signUp, // This expects (email, password, username)
+    signUp: authOperations.signUp,
     signOut: authOperations.signOut,
     initializeAuth: authOperations.initializeAuth,
 
