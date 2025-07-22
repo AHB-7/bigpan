@@ -1,6 +1,6 @@
 // src/components/profile/profileParts/ProfileHeader.tsx
 import React, { useState } from 'react'
-import { View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 import { Text } from '@/components/common'
 import { ProfileAvatar } from './ProfileAvatar'
 import { RelationshipBadges } from './RelationshipBadges'
@@ -12,6 +12,7 @@ import { ProfileStats } from './ProfileStats'
 import { BigBtn } from './Btn'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
+import { router } from 'expo-router'
 
 interface ProfileHeaderProps {
   profile: EnhancedUserProfile
@@ -79,7 +80,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* Settings and actions for own profile */}
       {isOwnProfile && (
         <>
-          <Ionicons name="settings" style={styles.settingIcon} />
+          <TouchableOpacity
+            style={styles.settingIconContainer}
+            onPress={() => router.push('/(modals)/settings')}
+          >
+            <Ionicons name="settings" style={styles.settingIcon} />
+          </TouchableOpacity>
           <BigBtn />
         </>
       )}

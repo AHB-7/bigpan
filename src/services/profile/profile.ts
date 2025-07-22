@@ -1,5 +1,5 @@
 // src/services/profile.ts
-import { supabase } from './supabase/client'
+import { supabase } from '../supabase/client'
 import type {
   UserWithStats,
   EnhancedUserProfile,

@@ -6,7 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text, LoadingSpinner } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
-import { profileService, type EnhancedUserProfile } from '@/services/profile'
+import {
+  profileService,
+  type EnhancedUserProfile,
+} from '@/services/profile/profile'
 import { theme } from '@/styles/theme'
 
 // Import all the small components
@@ -14,7 +17,7 @@ import { ProfileHeader, RecentRecipes } from '@/components/profile/profileParts'
 
 export default function UserPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const { user: currentUser, signOut } = useAuth()
+  const { user: currentUser } = useAuth()
   const { executeSupabase } = useAsyncFunction()
   const [profileData, setProfileData] = useState<EnhancedUserProfile | null>(
     null

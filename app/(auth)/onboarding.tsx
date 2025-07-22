@@ -1,21 +1,23 @@
-import React, { useState } from 'react'
+// app/(auth)/onboarding.tsx - Clean version using your existing types and structure
+import React, { useState, useEffect } from 'react'
 import { View, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FilterTagPicker } from '@/components/auth/onboard/FilterTagPicker'
 import { useFilterTagsGrouped } from '@/hooks/useFilterTags'
-import { FilterTagCategory } from '@/services/filterTags'
+import { FilterTagCategory } from '@/services/profile/filterTags'
 import { useAuth } from '@/hooks/useAuth'
-import { useAsyncFunction } from '@/hooks/asyncFunction'
+import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { router } from 'expo-router'
 import { styles } from '@/components/auth/styles'
 import { NavBar } from '@/components/nav/NavBar'
+import { theme } from '@/styles/theme'
+import { Text } from '@/components/common'
 
 const ONBOARDING_STEPS = [
   {
     categories: ['dietary'] as FilterTagCategory[],
-    title: 'Kosthold ',
-    subtitle:
-      'La oss starte med det viktigste - ditt kosthold og eventuelle allergier',
+    title: 'Kosthold',
+    subtitle: 'La oss starte med det viktigste - ditt kosthold',
   },
   {
     categories: ['allergens'] as FilterTagCategory[],
@@ -28,7 +30,7 @@ const ONBOARDING_STEPS = [
     subtitle: 'Hvilke typer mat liker du best?',
   },
   {
-    categories: ['difficulty', 'time', 'cooking_method'] as FilterTagCategory[],
+    categories: ['difficulty', 'time'] as FilterTagCategory[],
     title: 'Kokkeerfaring',
     subtitle: 'Fortell oss om ditt nivå og hvor mye tid du har',
   },
@@ -41,7 +43,6 @@ function getCategoryTitle(category: string): string {
     allergens: 'Allergener',
     difficulty: 'Nivå',
     time: 'Tidsbruk',
-    cooking_method: 'Kokkemetoder',
   }
   return titles[category] || category
 }
@@ -54,9 +55,11 @@ export default function Onboarding() {
   const [currentStepTags, setCurrentStepTags] = useState<
     Record<string, string[]>
   >({})
+  const [isEditMode, setIsEditMode] = useState(false)
 
-  const { updatePreferences } = useAuth()
-  const { executeSupabase } = useAsyncFunction()
+  const { user } = useAuth()
+  const { saveOnboardingPreferences, preferences, hasCompletedOnboarding } =
+    useUserPreferences()
 
   const currentStepConfig = ONBOARDING_STEPS[currentStep]
   const { tagsGrouped, loading } = useFilterTagsGrouped(
@@ -65,6 +68,36 @@ export default function Onboarding() {
 
   const totalSteps = ONBOARDING_STEPS.length
   const isLastStep = currentStep === totalSteps - 1
+
+  // Check if user is editing existing preferences
+  useEffect(() => {
+    if (hasCompletedOnboarding) {
+      setIsEditMode(true)
+    }
+  }, [hasCompletedOnboarding])
+
+  // Pre-populate with existing preferences if available
+  useEffect(() => {
+    if (preferences && tagsGrouped) {
+      const existingTags: Record<string, string[]> = {}
+
+      currentStepConfig.categories.forEach((category) => {
+        if (category === 'allergens') {
+          existingTags[category] = preferences.blocked_filter_tags || []
+        } else {
+          const categoryTags = (preferences.preferred_filter_tags || []).filter(
+            (tagId) =>
+              tagsGrouped[category]?.some(
+                (tag: { id: string }) => tag.id === tagId
+              )
+          )
+          existingTags[category] = categoryTags
+        }
+      })
+
+      setCurrentStepTags(existingTags)
+    }
+  }, [preferences, tagsGrouped, currentStep])
 
   const handleTagToggle = (category: string, tagId: string) => {
     setCurrentStepTags((prev) => {
@@ -88,14 +121,23 @@ export default function Onboarding() {
     setAllSelectedTags(updatedAllTags)
 
     if (isLastStep) {
-      await executeSupabase(() => updatePreferences(updatedAllTags), {
-        showErrorMethod: 'alert',
-        successMessage: 'Profil oppdatert! Velkommen til BigPan!',
-        errorMessage: 'Kunne ikke lagre preferanser. Prøv igjen.',
-        onSuccess: () => {
-          router.replace('/(tabs)/home')
-        },
-      })
+      if (!user?.id) {
+        console.error('No user found for onboarding completion')
+        return
+      }
+
+      console.log('Saving preferences:', updatedAllTags)
+
+      const result = await saveOnboardingPreferences(updatedAllTags)
+
+      if (result.success) {
+        console.log('✅ Onboarding completed successfully')
+        router.replace(`/user/${user.id}`)
+      } else {
+        console.error('❌ Failed to save preferences:', result.error)
+        // Still navigate but show error
+        router.replace(`/user/${user.id}`)
+      }
     } else {
       setCurrentStep(currentStep + 1)
       setCurrentStepTags({})
@@ -127,23 +169,17 @@ export default function Onboarding() {
 
   const handleSkip = async () => {
     if (isLastStep) {
+      // Save whatever we have so far
       const finalTags = {
         ...allSelectedTags,
         ...currentStepTags,
       }
 
-      await executeSupabase(() => updatePreferences(finalTags), {
-        showErrorMethod: 'alert',
-        successMessage: 'Velkommen til BigPan!',
-        errorMessage:
-          'Kunne ikke lagre preferanser, men du kan sette dem senere.',
-        onSuccess: () => {
-          router.replace('/(tabs)/home')
-        },
-        onError: () => {
-          router.replace('/(tabs)/home')
-        },
-      })
+      if (user?.id && Object.keys(finalTags).length > 0) {
+        await saveOnboardingPreferences(finalTags)
+      }
+
+      router.replace(`/user/${user?.id}`)
     } else {
       setCurrentStep(currentStep + 1)
       setCurrentStepTags({})
@@ -166,6 +202,34 @@ export default function Onboarding() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContentOnboarding}>
+        {/* Show edit mode indicator */}
+        {isEditMode && (
+          <View
+            style={{
+              marginBottom: theme.spacing.md,
+              padding: theme.spacing.md,
+              backgroundColor: theme.colors.success + '15',
+              borderRadius: theme.borderRadius.md,
+              borderLeftWidth: 4,
+              borderLeftColor: theme.colors.success,
+            }}
+          >
+            <Text
+              variant="body"
+              weight="medium"
+              style={{ color: theme.colors.success }}
+            >
+              ✏️ Redigerer eksisterende preferanser
+            </Text>
+            <Text
+              variant="caption"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              Dine tidligere valg er allerede markert
+            </Text>
+          </View>
+        )}
+
         {currentStepConfig.categories.map((category) => (
           <FilterTagPicker
             key={category}
@@ -174,6 +238,7 @@ export default function Onboarding() {
             onTagToggle={(tagId) => handleTagToggle(category, tagId)}
             loading={loading}
             title={getCategoryTitle(category)}
+            category={category}
           />
         ))}
       </ScrollView>
@@ -188,7 +253,11 @@ export default function Onboarding() {
           middleButton: {
             onPress: handleSkip,
             iconName: 'play-skip-forward-outline',
-            text: isLastStep ? 'Fullfør' : 'Hopp over',
+            text: isLastStep
+              ? isEditMode
+                ? 'Oppdater'
+                : 'Fullfør'
+              : 'Hopp over',
           },
           rightButton: {
             onPress: handleNext,

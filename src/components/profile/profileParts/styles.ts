@@ -22,10 +22,13 @@ export const styles = StyleSheet.create({
     fontSize: theme.fontSize.xl,
     color: theme.colors.primary,
   },
-  settingIcon: {
+  settingIconContainer: {
     position: 'absolute',
     right: theme.spacing.sm,
     top: theme.spacing.sm,
+  },
+
+  settingIcon: {
     fontSize: theme.fontSize.xxl,
     color: theme.colors.onBackground + 'cc',
     transform: [{ rotate: '90deg' }],

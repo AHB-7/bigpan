@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
-import { FilterTagCategory, filterTagsService } from '@/services/filterTags'
+import {
+  FilterTagCategory,
+  filterTagsService,
+} from '@/services/profile/filterTags'
 import type { Database } from '@/types/supabase'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']

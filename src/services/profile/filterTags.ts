@@ -1,4 +1,4 @@
-import { supabase } from './supabase/client'
+import { supabase } from '../supabase/client'
 import type { Database } from '@/types/supabase'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']
