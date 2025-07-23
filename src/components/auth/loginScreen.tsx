@@ -1,3 +1,4 @@
+// src/components/auth/loginScreen.tsx - Clean version with translations
 import { useState } from 'react'
 import {
   View,
@@ -10,6 +11,7 @@ import {
 import { router } from 'expo-router'
 import { Controller } from 'react-hook-form'
 import { useAuth } from '@/hooks/useAuth'
+import { useTranslation } from '@/hooks/useTranslation'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { theme } from '@/styles/theme'
 import { AntDesign } from '@expo/vector-icons'
@@ -22,6 +24,7 @@ import {
   InlineError,
   IconButton,
 } from '@/components/common'
+import { LanguagePicker } from '@/components/common/LanguagePicker'
 import { styles } from './styles'
 import { LoginFormData, useLoginForm } from '@/schemas/auth'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
@@ -30,6 +33,7 @@ import { DividerWithText } from '../common/ui/divider'
 export const LoginScreen: React.FC = () => {
   const { executeSupabase, isLoading } = useAsyncFunction()
   const { signIn, user } = useAuth()
+  const { t } = useTranslation()
   const { control, handleSubmit, errors } = useLoginForm()
   const [loginError, setLoginError] = useState('')
 
@@ -38,8 +42,7 @@ export const LoginScreen: React.FC = () => {
 
     await executeSupabase(() => signIn(data.email, data.password), {
       showErrorMethod: 'inline',
-      errorMessage:
-        'Ugyldig e-post eller passord. Vennligst sjekk dine legitimasjonsopplysninger og prøv igjen.',
+      errorMessage: t('auth.error.invalid'),
       onSuccess: () => {
         user?.id && router.replace(`/user/${user.id}`)
       },
@@ -62,10 +65,17 @@ export const LoginScreen: React.FC = () => {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
+            {/* Language Picker at the top */}
+            <View
+              style={{ alignItems: 'center', marginBottom: theme.spacing.lg }}
+            >
+              <LanguagePicker showLabel={false} />
+            </View>
+
             <View style={styles.formContainer}>
               <View style={styles.headerContainer}>
                 <Text weight="black" variant="heading1">
-                  Logg Inn
+                  {t('auth.login')}
                 </Text>
               </View>
 
@@ -74,9 +84,9 @@ export const LoginScreen: React.FC = () => {
                 name="email"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    label="E-post"
+                    label={t('auth.email')}
                     autoFocus={true}
-                    placeholder="Skriv inn din e-post"
+                    placeholder={t('auth.email.placeholder')}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -96,8 +106,8 @@ export const LoginScreen: React.FC = () => {
                 name="password"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    label="Passord"
-                    placeholder="Skriv inn ditt passord"
+                    label={t('auth.password')}
+                    placeholder={t('auth.password.placeholder')}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -120,7 +130,7 @@ export const LoginScreen: React.FC = () => {
                 variant="bodySmall"
                 weight="medium"
               >
-                Glemt passord?
+                {t('auth.forgot.password')}
               </TextLink>
 
               <Button
@@ -131,11 +141,11 @@ export const LoginScreen: React.FC = () => {
                 {isLoading && (
                   <LoadingSpinner size="small" color={theme.colors.surface} />
                 )}
-                {isLoading ? 'Logger inn...' : 'Logg Inn'}
+                {isLoading ? t('message.loading') : t('auth.login.button')}
               </Button>
 
               <View style={styles.divider}>
-                <DividerWithText text="eller" />
+                <DividerWithText text={t('common.or')} />
               </View>
 
               <View style={styles.iconsContainer}>
@@ -143,16 +153,16 @@ export const LoginScreen: React.FC = () => {
                   onPress={() => handleSocialAuth('apple')}
                   variant="empty"
                   icon={<AntDesign name="apple1" size={24} color="black" />}
-                  accessibilityLabel="Logg inn med Apple"
-                  accessibilityHint="Logg inn med din Apple-konto"
+                  accessibilityLabel={t('auth.apple.accessibility')}
+                  accessibilityHint={t('auth.apple.hint')}
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
                   onPress={() => handleSocialAuth('google')}
                   variant="empty"
                   icon={<AntDesign name="google" size={24} color="black" />}
-                  accessibilityLabel="Logg inn med Google"
-                  accessibilityHint="Logg inn med din Google-konto"
+                  accessibilityLabel={t('auth.google.accessibility')}
+                  accessibilityHint={t('auth.google.hint')}
                   color={theme.colors.onSurfaceVariant}
                 />
                 <IconButton
@@ -161,22 +171,22 @@ export const LoginScreen: React.FC = () => {
                   icon={
                     <AntDesign name="facebook-square" size={24} color="black" />
                   }
-                  accessibilityLabel="Logg inn med Facebook"
-                  accessibilityHint="Logg inn med din Facebook-konto"
+                  accessibilityLabel={t('auth.facebook.accessibility')}
+                  accessibilityHint={t('auth.facebook.hint')}
                   color={theme.colors.onSurfaceVariant}
                 />
               </View>
             </View>
 
             <View style={styles.footer}>
-              <Text variant="bodySmall">Har du ikke en konto? </Text>
+              <Text variant="bodySmall">{t('auth.no.account')} </Text>
               <TextLink
                 href="/(auth)/register"
                 variant="bodySmall"
                 color={theme.colors.primary}
                 weight="semiBold"
               >
-                Registrer deg nå!
+                {t('auth.register.link')}
               </TextLink>
             </View>
           </ScrollView>
