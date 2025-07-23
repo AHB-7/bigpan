@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthStore>()(
       session: null,
       preferences: null,
       isLoading: false,
-      isInitialized: false, // Start as false
+      isInitialized: false,
 
       get isAuthenticated() {
         return !!get().session?.user

@@ -1,12 +1,14 @@
+// src/components/common/buttons/Button.tsx - Updated with translation support
 import React from 'react'
 import { TouchableOpacity, ViewStyle, TextStyle } from 'react-native'
 import { Text } from '../informatic/Text'
 import { theme } from '@/styles/theme'
+import { useTranslation, TranslationKey } from '@/hooks/useTranslation'
 
 type ButtonVariant = 'filled' | 'outlined' | 'text'
 
 interface ButtonProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   onPress: () => void
   variant?: ButtonVariant
   disabled?: boolean
@@ -15,6 +17,9 @@ interface ButtonProps {
   textStyle?: TextStyle
   textColor?: string
   backgroundColor?: string
+  // Translation support
+  translationKey?: TranslationKey
+  translationParams?: Record<string, string | number>
   [key: string]: any
 }
 
@@ -28,8 +33,12 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   textColor,
   backgroundColor,
+  translationKey,
+  translationParams,
   ...props
 }) => {
+  const { t } = useTranslation()
+
   const buttonStyles = {
     filled: {
       backgroundColor: disabled
@@ -67,6 +76,13 @@ export const Button: React.FC<ButtonProps> = ({
 
   const isDisabled = disabled || loading
 
+  // Get display text
+  const displayText = loading
+    ? t('common.loading')
+    : translationKey
+      ? t(translationKey, translationParams)
+      : children
+
   return (
     <TouchableOpacity
       style={[buttonStyles[variant], style]}
@@ -75,17 +91,13 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={isDisabled ? 1 : 0.7}
       {...props}
     >
-      {loading ? (
-        <Text style={{ color: textColors[variant] }}>Loading...</Text>
-      ) : (
-        <Text
-          variant="body"
-          weight="medium"
-          style={{ color: textColors[variant], ...textStyle }}
-        >
-          {children}
-        </Text>
-      )}
+      <Text
+        variant="body"
+        weight="medium"
+        style={{ color: textColors[variant], ...textStyle }}
+      >
+        {displayText}
+      </Text>
     </TouchableOpacity>
   )
 }

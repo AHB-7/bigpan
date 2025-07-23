@@ -129,8 +129,14 @@ export const authOperations = {
   },
 
   async initializeAuth() {
-    const { setLoading, setSession, setInitialized, session, isInitialized } =
-      useAuthStore.getState()
+    const {
+      setLoading,
+      setSession,
+      setInitialized,
+      session,
+      isInitialized,
+      setUser,
+    } = useAuthStore.getState()
 
     // If already initialized and we have a session, don't reinitialize
     if (isInitialized && session) {
@@ -147,6 +153,12 @@ export const authOperations = {
       const { session: currentSession } = await authService.getSession()
       if (currentSession) {
         setSession(currentSession)
+        const { data: profile } = await authOperations.getCurrentUserProfile()
+        if (profile) {
+          useAuthStore.getState().setUser(profile)
+        }
+        console.log('Session found:', currentSession.user.id)
+        console.log('Profile found:', profile)
       }
 
       // Set up auth state listener
