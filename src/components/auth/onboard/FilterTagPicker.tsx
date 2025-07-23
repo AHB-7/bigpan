@@ -5,7 +5,7 @@ import { Text, Button } from '@/components/common'
 import { theme } from '@/styles/theme'
 import type { Database } from '@/types/supabase'
 import { styles } from '../styles'
-import { useUserPreferences } from '@/hooks/useUserPreferences'
+import { useAuth } from '@/hooks/useAuth'
 
 type FilterTag = Database['public']['Tables']['filter_tags']['Row']
 
@@ -27,7 +27,7 @@ export const FilterTagPicker: React.FC<FilterTagPickerProps> = ({
   title,
   category,
 }) => {
-  const { preferences } = useUserPreferences()
+  const { preferences } = useAuth()
   const [initiallySelected, setInitiallySelected] = useState<string[]>([])
 
   // Pre-populate with user's existing preferences on mount

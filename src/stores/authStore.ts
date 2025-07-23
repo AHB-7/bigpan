@@ -1,118 +1,77 @@
-// src/stores/authStore.ts - Fixed version to prevent logout on hot reload
+// src/stores/authStore.ts - Fixed with direct userId property
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import type { User, UserPreferencesTyped } from '@/types'
-import type { Session, User as SupabaseUser } from '@supabase/supabase-js'
+import type { User, Session } from '@supabase/supabase-js'
+import type { UserPreferences } from '@/types'
 
 interface AuthStore {
+  // State
   user: User | null
   session: Session | null
-  preferences: UserPreferencesTyped | null
+  userId: string | null // ✅ Direct property instead of getter
+  preferences: UserPreferences | null
   isLoading: boolean
-  isInitialized: boolean // Add this flag
 
+  // Computed
   get isAuthenticated(): boolean
 
-  setUser: (user: User | null) => void
+  // Actions
   setSession: (session: Session | null) => void
-  setPreferences: (preferences: UserPreferencesTyped) => void
+  setPreferences: (preferences: UserPreferences | null) => void
   setLoading: (loading: boolean) => void
-  setInitialized: (initialized: boolean) => void // Add this action
-  updateUser: (updates: Partial<User>) => void
-  clearAuth: () => void
-}
-
-const convertSupabaseUserToUser = (
-  supabaseUser: SupabaseUser
-): Partial<User> => {
-  return {
-    id: supabaseUser.id,
-    user_id: supabaseUser.id,
-    username:
-      supabaseUser.user_metadata?.username ||
-      supabaseUser.email?.split('@')[0] ||
-      '',
-    display_name:
-      supabaseUser.user_metadata?.display_name ||
-      supabaseUser.user_metadata?.username ||
-      '',
-    bio: supabaseUser.user_metadata?.bio || null,
-    avatar_url: supabaseUser.user_metadata?.avatar_url || null,
-    cooking_level: supabaseUser.user_metadata?.cooking_level || null,
-    dietary_restrictions:
-      supabaseUser.user_metadata?.dietary_restrictions || null,
-    allergens: supabaseUser.user_metadata?.allergens || null,
-    favorite_cuisines: supabaseUser.user_metadata?.favorite_cuisines || null,
-    location: supabaseUser.user_metadata?.location || null,
-    is_verified: supabaseUser.user_metadata?.is_verified || null,
-    created_at: supabaseUser.created_at || null,
-    updated_at: supabaseUser.updated_at || null,
-    privacy_settings: null,
-  }
+  clear: () => void
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
+      // State
       user: null,
       session: null,
+      userId: null, // ✅ Direct property
       preferences: null,
       isLoading: false,
-      isInitialized: false,
 
+      // Computed
       get isAuthenticated() {
         return !!get().session?.user
       },
 
-      setUser: (user) => set({ user }),
-
+      // Actions
       setSession: (session) => {
-        let user: User | null = null
+        console.log('setSession called:', {
+          hasSession: !!session,
+          sessionId: session?.user?.id,
+        })
 
-        if (session?.user) {
-          const convertedUser = convertSupabaseUserToUser(session.user)
-          user = convertedUser as User
-        }
-
-        set({ session, user })
+        set({
+          session,
+          user: session?.user || null,
+          userId: session?.user?.id || null, // ✅ Set userId directly
+        })
       },
 
       setPreferences: (preferences) => set({ preferences }),
 
-      setLoading: (loading) => {
-        // Only set loading if we're not already initialized with a session
-        // This prevents clearing auth state during hot reloads
-        const currentState = get()
-        if (!currentState.isInitialized || !currentState.session) {
-          set({ isLoading: loading })
-        }
-      },
+      setLoading: (loading) => set({ isLoading: loading }),
 
-      setInitialized: (initialized) => set({ isInitialized: initialized }),
-
-      updateUser: (updates) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null,
-        })),
-
-      clearAuth: () =>
+      clear: () =>
         set({
           user: null,
           session: null,
+          userId: null, // ✅ Clear userId too
           preferences: null,
           isLoading: false,
-          isInitialized: false,
         }),
     }),
     {
       name: 'bigpan-auth',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        user: state.user,
+        session: state.session,
+        userId: state.userId, // ✅ Persist userId
         preferences: state.preferences,
-        session: state.session, // Also persist session
-        isInitialized: state.isInitialized, // Persist this flag
       }),
     }
   )

@@ -5,12 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { Text, Button, Input } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserPreferences } from '@/hooks/useUserPreferences'
-import { useProfileUpdate } from '@/hooks/seProfileUpdate'
 import { theme } from '@/styles/theme'
 import { Controller, useForm } from 'react-hook-form'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useAsyncFunction } from '@/hooks/asyncFunction'
+import { supabase } from '@/services/supabase/client'
 
 interface UserInfoProps {
   // Profile fields
@@ -33,12 +33,12 @@ interface UserInfoProps {
 }
 
 export function Profile() {
-  const { user, signOut } = useAuth()
-  const { preferences } = useUserPreferences()
-  const { updateProfileAndPreferences } = useProfileUpdate()
+  const { user, preferences, updateProfile, updatePreferences } = useAuth()
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { t } = useTranslation()
+  const [profileData, setProfileData] = useState<any>(null)
+  const { executeSupabase } = useAsyncFunction()
 
   const {
     control,
@@ -66,58 +66,75 @@ export function Profile() {
   })
 
   useEffect(() => {
-    if (user || preferences) {
+    const loadProfile = async () => {
+      if (user?.id) {
+        await executeSupabase(
+          async () => {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', user.id)
+              .single()
+
+            if (error) throw error
+            return { data, error: null }
+          },
+          {
+            showErrorMethod: 'none',
+            onSuccess: (data) => setProfileData(data),
+            onError: (err) => console.error('Profile load error:', err),
+          }
+        )
+      }
+    }
+
+    loadProfile()
+  }, [user?.id])
+
+  // Update the form reset useEffect
+  useEffect(() => {
+    if (profileData || preferences) {
       reset({
-        // Profile data from user
-        display_name: user?.display_name || '',
-        bio: user?.bio || undefined,
-        cooking_level:
-          user?.cooking_level === 'beginner' ||
-          user?.cooking_level === 'intermediate' ||
-          user?.cooking_level === 'advanced'
-            ? user.cooking_level
-            : 'beginner',
-        location: user?.location || undefined,
+        // Use profileData instead of user_metadata
+        display_name: profileData?.display_name || '',
+        bio: profileData?.bio || '',
+        cooking_level: profileData?.cooking_level || 'beginner',
+        location: profileData?.location,
 
         // Preference data from preferences
         cooking_time_preference: preferences?.cooking_time_preference || 60,
         serving_size_preference: preferences?.serving_size_preference || 2,
         budget_preference: preferences?.budget_preference || 'medium',
 
-        // Simple notification preferences (you can expand this)
+        // Simple notification preferences
         email_notifications: true,
         push_notifications: true,
       })
     }
-  }, [user, preferences, reset])
+  }, [profileData, preferences, reset])
 
   const onSubmit = async (data: UserInfoProps) => {
     setError('')
     setIsLoading(true)
 
     try {
-      const result = await updateProfileAndPreferences(
-        // Profile updates
-        {
-          display_name: data.display_name,
-          bio: data.bio,
-          cooking_level: data.cooking_level,
-          location: data.location,
-        },
-        // Preference updates
-        {
-          cooking_time_preference: data.cooking_time_preference,
-          serving_size_preference: data.serving_size_preference,
-          budget_preference: data.budget_preference,
-          // For now, we'll store simple notification preferences
-          // You can expand this later to use the full JSON structure
-        }
-      )
-
-      if (result.success) {
+      const profileResult = await updateProfile({
+        display_name: data.display_name,
+        bio: data.bio,
+        cooking_level: data.cooking_level,
+        location: data.location,
+      })
+      const preferencesResult = await updatePreferences({
+        cooking_time_preference: data.cooking_time_preference,
+        serving_size_preference: data.serving_size_preference,
+        budget_preference: data.budget_preference,
+      })
+      if (profileResult.success && preferencesResult.success) {
         router.back()
       } else {
-        setError(result.error || 'Kunne ikke oppdatere innstillinger')
+        setError(
+          preferencesResult.error || 'Kunne ikke oppdatere innstillinger'
+        )
       }
     } catch (error: any) {
       setError(error.message || 'En feil oppstod')
@@ -129,6 +146,7 @@ export function Profile() {
     console.log('user', user)
     console.log('preferences', preferences)
   }, [user, preferences])
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView style={{ flex: 1, padding: theme.spacing.md }}>
@@ -165,7 +183,10 @@ export function Profile() {
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
                 label={t('settings.profile.bio')}
-                placeholder={user?.bio || t('settings.profile.bio_placeholder')}
+                placeholder={
+                  user?.user_metadata?.bio ||
+                  t('settings.profile.bio_placeholder')
+                }
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -217,10 +238,8 @@ export function Profile() {
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
                 label={t('settings.profile.location')}
-                placeholder={
-                  user?.location || t('settings.profile.location.example')
-                }
-                value={user?.location || undefined}
+                placeholder={t('settings.profile.location.example')}
+                value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
               />

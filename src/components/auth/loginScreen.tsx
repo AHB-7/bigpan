@@ -40,14 +40,31 @@ export const LoginScreen: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoginError('')
 
-    await executeSupabase(() => signIn(data.email, data.password), {
-      showErrorMethod: 'inline',
-      errorMessage: t('auth.error.invalid'),
-      onSuccess: () => {
-        user?.id && router.replace(`/user/${user.id}`)
-      },
-      onShowError: (message) => setLoginError(message),
-    })
+    const result = await executeSupabase(
+      () => signIn(data.email, data.password),
+      {
+        showErrorMethod: 'inline',
+        errorMessage: t('auth.error.invalid'),
+        onSuccess: (signInResult) => {
+          console.log('SignIn result:', {
+            success: true,
+            userId: signInResult?.session?.user?.id,
+            hasSession: !!signInResult?.session,
+            hasUser: !!signInResult?.session?.user,
+          })
+
+          const userId = signInResult?.session?.user?.id
+          if (userId) {
+            router.replace(`/user/${userId}`)
+          } else {
+            console.error('No user ID in sign in result')
+          }
+        },
+        onShowError: (message) => setLoginError(message),
+      }
+    )
+
+    console.log('ExecuteSupabase result:', result)
   }
 
   const handleSocialAuth = (_provider: 'apple' | 'google' | 'facebook') => {

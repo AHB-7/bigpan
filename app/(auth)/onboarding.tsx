@@ -6,7 +6,6 @@ import { FilterTagPicker } from '@/components/auth/onboard/FilterTagPicker'
 import { useFilterTagsGrouped } from '@/hooks/useFilterTags'
 import { FilterTagCategory } from '@/services/profile/filterTags'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserPreferences } from '@/hooks/useUserPreferences'
 import { router } from 'expo-router'
 import { styles } from '@/components/auth/styles'
 import { NavBar } from '@/components/nav/NavBar'
@@ -57,9 +56,8 @@ export default function Onboarding() {
   >({})
   const [isEditMode, setIsEditMode] = useState(false)
 
-  const { user } = useAuth()
-  const { saveOnboardingPreferences, preferences, hasCompletedOnboarding } =
-    useUserPreferences()
+  const { user, preferences, updatePreferences } = useAuth()
+  const hasCompletedOnboarding = !!preferences?.preferred_filter_tags?.length
 
   const currentStepConfig = ONBOARDING_STEPS[currentStep]
   const { tagsGrouped, loading } = useFilterTagsGrouped(
@@ -112,7 +110,6 @@ export default function Onboarding() {
       }
     })
   }
-
   const handleNext = async () => {
     const updatedAllTags = {
       ...allSelectedTags,
@@ -128,14 +125,25 @@ export default function Onboarding() {
 
       console.log('Saving preferences:', updatedAllTags)
 
-      const result = await saveOnboardingPreferences(updatedAllTags)
+      // Flatten all selected tags
+      const allTagIds = Object.values(updatedAllTags).flat()
+
+      const result = await updatePreferences({
+        preferred_filter_tags: allTagIds,
+        blocked_filter_tags: updatedAllTags.allergens || [],
+        difficulty_preference: updatedAllTags.difficulty?.length
+          ? 'intermediate'
+          : 'beginner',
+        cooking_time_preference: updatedAllTags.time?.length ? 45 : 60,
+        serving_size_preference: 2,
+        budget_preference: 'medium',
+      })
 
       if (result.success) {
         console.log('✅ Onboarding completed successfully')
         router.replace(`/user/${user.id}`)
       } else {
         console.error('❌ Failed to save preferences:', result.error)
-        // Still navigate but show error
         router.replace(`/user/${user.id}`)
       }
     } else {
@@ -166,7 +174,6 @@ export default function Onboarding() {
       setCurrentStepTags(prevStepTags)
     }
   }
-
   const handleSkip = async () => {
     if (isLastStep) {
       // Save whatever we have so far
@@ -176,7 +183,11 @@ export default function Onboarding() {
       }
 
       if (user?.id && Object.keys(finalTags).length > 0) {
-        await saveOnboardingPreferences(finalTags)
+        const allTagIds = Object.values(finalTags).flat()
+        await updatePreferences({
+          preferred_filter_tags: allTagIds,
+          blocked_filter_tags: finalTags.allergens || [],
+        })
       }
 
       router.replace(`/user/${user?.id}`)
