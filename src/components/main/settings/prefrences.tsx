@@ -1,288 +1,324 @@
-// src/components/profile/settings/Profile.tsx - Enhanced with dynamic NavBar
+// src/components/main/settings/Preferences.tsx
 import React, { useState, useEffect } from 'react'
-import { View, ScrollView, Switch, Alert } from 'react-native'
+import { View, ScrollView, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import { Text, Button, Input } from '@/components/common'
+import { Text, Button, LoadingSpinner, InlineError } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
 import { theme } from '@/styles/theme'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller } from 'react-hook-form'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
-import { supabase } from '@/services/supabase/client'
 import { NavBar } from '@/components/nav/NavBar'
+import { usePreferencesForm, PreferencesFormData } from '@/schemas/forms'
+import type { UpdateUserPreferencesData } from '@/types'
 
-interface UserInfoProps {
-  // Profile fields
-  display_name: string
-  bio: string
-  cooking_level: 'beginner' | 'intermediate' | 'advanced'
-  location: string
-
-  // Preference fields
-  cooking_time_preference: number
-  serving_size_preference: number
-  budget_preference: string
-
-  // Notification settings (simple boolean for now)
-  email_notifications: boolean
-  push_notifications: boolean
-
-  sms_notifications: boolean
-  dark_mode: boolean
+const isValidBudgetPreference = (
+  value: string | null | undefined
+): value is 'low' | 'medium' | 'high' => {
+  return value === 'low' || value === 'medium' || value === 'high'
 }
 
+const COOKING_TIMES = [15, 30, 45, 60, 90]
+const SERVING_SIZES = [1, 2, 4, 6, 8]
+const BUDGET_OPTIONS = [
+  { value: 'low' as const, label: 'Lavt', icon: '' },
+  { value: 'medium' as const, label: 'Medium', icon: '' },
+  { value: 'high' as const, label: 'Høyt', icon: '' },
+]
+
 export function Preferences() {
-  const { user, preferences, updateProfile, updatePreferences } = useAuth()
-  const [error, setError] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState(false)
+  const { preferences, updatePreferences } = useAuth()
   const { t } = useTranslation()
-  const [profileData, setProfileData] = useState<any>(null)
-  const [originalValues, setOriginalValues] = useState<UserInfoProps | null>(
-    null
-  )
-  const { executeSupabase } = useAsyncFunction()
+  const [preferencesError, setPreferencesError] = useState('')
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors, isDirty },
-  } = useForm<UserInfoProps>({
-    defaultValues: {
-      // Preference defaults
-      cooking_time_preference: 60,
-      serving_size_preference: 2,
-      budget_preference: 'medium',
-    },
-  })
+  const { executeSupabase: savePreferences, isLoading: isSaving } =
+    useAsyncFunction()
+  const { control, handleSubmit, reset, isDirty } = usePreferencesForm()
 
   useEffect(() => {
-    const loadProfile = async () => {
-      if (user?.id) {
-        await executeSupabase(
-          async () => {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', user.id)
-              .single()
+    if (preferences) {
+      const budgetPreference = isValidBudgetPreference(
+        preferences.budget_preference
+      )
+        ? preferences.budget_preference
+        : 'medium'
 
-            if (error) throw error
-            return { data, error: null }
-          },
-          {
-            showErrorMethod: 'none',
-            onSuccess: (data) => setProfileData(data),
-            onError: (err) => console.error('Profile load error:', err),
-          }
-        )
-      }
-    }
-
-    loadProfile()
-  }, [user?.id])
-
-  // Update the form reset useEffect
-  useEffect(() => {
-    if (profileData || preferences) {
-      const formValues: UserInfoProps = {
-        // Use profileData instead of user_metadata
-        display_name: profileData?.display_name || '',
-        bio: profileData?.bio || '',
-        cooking_level: profileData?.cooking_level || 'beginner',
-        location: profileData?.location || '',
-
-        // Preference data from preferences
-        cooking_time_preference: preferences?.cooking_time_preference || 60,
-        serving_size_preference: preferences?.serving_size_preference || 2,
-        budget_preference: preferences?.budget_preference || 'medium',
-
-        // Simple notification preferences
-        email_notifications: true,
-        push_notifications: true,
-        sms_notifications: false,
-        dark_mode: false,
-      }
-
-      reset(formValues)
-      setOriginalValues(formValues) // Store original values for reset
-    }
-  }, [profileData, preferences, reset])
-
-  const handleSave = async (data: UserInfoProps) => {
-    setError('')
-    setIsSaving(true)
-    setSaveSuccess(false)
-
-    try {
-      const profileResult = await updateProfile({
-        display_name: data.display_name,
-        bio: data.bio,
-        cooking_level: data.cooking_level,
-        location: data.location,
+      reset({
+        cooking_time_preference: preferences.cooking_time_preference || 60,
+        serving_size_preference: preferences.serving_size_preference || 2,
+        budget_preference: budgetPreference,
       })
-
-      const preferencesResult = await updatePreferences({
-        cooking_time_preference: data.cooking_time_preference,
-        serving_size_preference: data.serving_size_preference,
-        budget_preference: data.budget_preference,
-      })
-
-      if (profileResult.success && preferencesResult.success) {
-        setSaveSuccess(true)
-
-        // Reset form state to mark as clean
-        reset(data)
-        setOriginalValues(data)
-
-        // Show success for a moment, then navigate back
-        setTimeout(() => {
-          router.back()
-        }, 1000)
-      } else {
-        setError(
-          preferencesResult.error || 'Kunne ikke oppdatere innstillinger'
-        )
-      }
-    } catch (error: any) {
-      setError(error.message || 'En feil oppstod')
-    } finally {
-      setIsSaving(false)
     }
+  }, [preferences, reset])
+
+  const handleSave = async (data: PreferencesFormData) => {
+    if (!isDirty) {
+      router.back()
+      return { success: true }
+    }
+
+    const currentBudgetPreference = isValidBudgetPreference(
+      preferences?.budget_preference
+    )
+      ? preferences.budget_preference
+      : 'medium'
+
+    const hasActualChanges =
+      data.cooking_time_preference !==
+        (preferences?.cooking_time_preference || 60) ||
+      data.serving_size_preference !==
+        (preferences?.serving_size_preference || 2) ||
+      data.budget_preference !== currentBudgetPreference
+
+    if (!hasActualChanges) {
+      router.back()
+      return { success: true }
+    }
+
+    const result = await savePreferences(
+      () => updatePreferences(data as UpdateUserPreferencesData),
+      {
+        showErrorMethod: 'toast',
+        showSuccessMethod: 'toast',
+        successMessage: '✅ Preferanser oppdatert!',
+        errorMessage: 'Kunne ikke oppdatere preferanser',
+        onSuccess: () => {
+          reset(data)
+          setTimeout(() => router.back(), 800)
+        },
+      }
+    )
+
+    return result
   }
 
   const handleReset = () => {
-    if (originalValues) {
-      reset(originalValues)
-      setError('')
-      setSaveSuccess(false)
+    reset()
+    setPreferencesError('')
+  }
+
+  const handleBackPress = () => {
+    if (isDirty && !isSaving) {
+      Alert.alert(
+        'Ulagrede endringer',
+        'Du har ulagrede endringer. Er du sikker på at du vil gå tilbake?',
+        [
+          { text: 'Avbryt', style: 'cancel' },
+          {
+            text: 'Gå tilbake',
+            style: 'destructive',
+            onPress: () => router.canGoBack() && router.back(),
+          },
+        ]
+      )
+    } else if (!isSaving) {
+      router.canGoBack() && router.back()
     }
   }
 
-  // Get dynamic colors based on form state
-  const getMiddleButtonColor = () => {
-    if (isSaving) return theme.colors.primary
-    if (saveSuccess) return theme.colors.success
-    if (isDirty) return theme.colors.primary
+  const getButtonColor = () => {
+    if (isSaving || isDirty) return theme.colors.primary
     return theme.colors.onBackground
   }
 
-  const getMiddleButtonText = () => {
+  const getButtonText = () => {
     if (isSaving) return 'Lagrer...'
-    if (saveSuccess) return 'Lagret!'
+    if (!isDirty) return 'Lukk'
     return t('settings.save')
   }
 
-  useEffect(() => {
-    console.log('Form state:', {
-      isDirty,
-      isSaving,
-      saveSuccess,
-      buttonColor: getMiddleButtonColor(),
-    })
-  }, [isDirty, isSaving, saveSuccess])
+  if (!preferences) {
+    return (
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: theme.spacing.lg,
+          }}
+        >
+          <LoadingSpinner />
+          <Text variant="body" style={{ marginTop: theme.spacing.md }}>
+            Laster preferanser...
+          </Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView style={{ flex: 1, padding: theme.spacing.md }}>
-        {/* Profile Section */}
-        <View>
-          <View
-            style={{
-              borderLeftColor: theme.colors.primary,
-              borderLeftWidth: 12,
-              marginTop: theme.spacing.xxl,
-              marginBottom: theme.spacing.xl,
-              paddingLeft: theme.spacing.md,
-            }}
+        {/* Header */}
+        <View
+          style={{
+            borderLeftColor: theme.colors.primary,
+            borderLeftWidth: 12,
+            marginTop: theme.spacing.xxl,
+            marginBottom: theme.spacing.xl,
+            paddingLeft: theme.spacing.md,
+          }}
+        >
+          <Text variant="heading2" weight="semiBold">
+            {t('settings.preferences')}
+          </Text>
+        </View>
+
+        {preferencesError && <InlineError message={preferencesError} />}
+
+        {/* Cooking Preferences */}
+        <View style={{ marginBottom: theme.spacing.xl }}>
+          <Text
+            variant="heading3"
+            weight="semiBold"
+            style={{ marginBottom: theme.spacing.md }}
           >
-            <Text variant="heading2" weight="semiBold">
-              {t('settings.preferences')}
-            </Text>
-          </View>
+            🍳 Kokkepreferanser
+          </Text>
 
-          {/* Error display */}
-          {error && (
-            <View
-              style={{
-                backgroundColor: theme.colors.error + '15',
-                padding: theme.spacing.md,
-                borderRadius: theme.borderRadius.md,
-                marginBottom: theme.spacing.md,
-              }}
-            >
-              <Text style={{ color: theme.colors.error }}>{error}</Text>
-            </View>
-          )}
+          {/* Cooking Time */}
+          <Controller
+            control={control}
+            name="cooking_time_preference"
+            render={({ field: { onChange, value } }) => (
+              <View style={{ marginBottom: theme.spacing.md }}>
+                <Text
+                  style={{
+                    fontSize: theme.fontSize.sm,
+                    fontWeight: theme.fontWeight.medium,
+                    color: theme.colors.onSurface,
+                    marginBottom: theme.spacing.xs,
+                  }}
+                >
+                  Ønsket koketid: {value} minutter
+                </Text>
+                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                  {COOKING_TIMES.map((time) => (
+                    <Button
+                      key={time}
+                      variant={value === time ? 'filled' : 'outlined'}
+                      onPress={() => onChange(time)}
+                      style={{ padding: theme.spacing.xs }}
+                      textVariant="caption"
+                    >
+                      {time}m
+                    </Button>
+                  ))}
+                </View>
+              </View>
+            )}
+          />
 
-          {/* Success display */}
-          {saveSuccess && (
-            <View
-              style={{
-                backgroundColor: theme.colors.success + '15',
-                padding: theme.spacing.md,
-                borderRadius: theme.borderRadius.md,
-                marginBottom: theme.spacing.md,
-              }}
-            >
-              <Text style={{ color: theme.colors.success }}>
-                ✅ Innstillinger oppdatert!
-              </Text>
-            </View>
-          )}
+          {/* Serving Size */}
+          <Controller
+            control={control}
+            name="serving_size_preference"
+            render={({ field: { onChange, value } }) => (
+              <View style={{ marginBottom: theme.spacing.md }}>
+                <Text
+                  style={{
+                    fontSize: theme.fontSize.sm,
+                    fontWeight: theme.fontWeight.medium,
+                    color: theme.colors.onSurface,
+                    marginBottom: theme.spacing.xs,
+                  }}
+                >
+                  Standard porsjoner: {value} personer
+                </Text>
+                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                  {SERVING_SIZES.map((size) => (
+                    <Button
+                      key={size}
+                      variant={value === size ? 'filled' : 'outlined'}
+                      onPress={() => onChange(size)}
+                      style={{ flex: 1 }}
+                      textVariant="caption"
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </View>
+              </View>
+            )}
+          />
+
+          {/* Budget Preference */}
+          <Controller
+            control={control}
+            name="budget_preference"
+            render={({ field: { onChange, value } }) => (
+              <View style={{ marginBottom: theme.spacing.md }}>
+                <Text
+                  style={{
+                    fontSize: theme.fontSize.sm,
+                    fontWeight: theme.fontWeight.medium,
+                    color: theme.colors.onSurface,
+                    marginBottom: theme.spacing.xs,
+                  }}
+                >
+                  Budsjettpreferanse
+                </Text>
+                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+                  {BUDGET_OPTIONS.map((budget) => (
+                    <Button
+                      key={budget.value}
+                      variant={value === budget.value ? 'filled' : 'outlined'}
+                      onPress={() => onChange(budget.value)}
+                      style={{ flex: 1 }}
+                      textVariant="caption"
+                    >
+                      {budget.icon} {budget.label}
+                    </Button>
+                  ))}
+                </View>
+              </View>
+            )}
+          />
+        </View>
+
+        {/* Quick Actions */}
+        <View style={{ marginBottom: theme.spacing.xl }}>
+          <Text
+            variant="heading3"
+            weight="semiBold"
+            style={{ marginBottom: theme.spacing.md }}
+          >
+            ⚡ Hurtigvalg
+          </Text>
+          <Button
+            onPress={() => router.push('/(auth)/onboarding')}
+            variant="outlined"
+            style={{ marginBottom: theme.spacing.md }}
+          >
+            ✏️ Rediger matpreferanser og allergier
+          </Button>
         </View>
       </ScrollView>
 
       <NavBar
         config={{
           leftButton: {
-            onPress: () => {
-              if (isDirty) {
-                Alert.alert(
-                  'Ulagrede endringer',
-                  'Du har ulagrede endringer. Er du sikker på at du vil gå tilbake?',
-                  [
-                    { text: 'Avbryt', style: 'cancel' },
-                    {
-                      text: 'Gå tilbake',
-                      style: 'destructive',
-                      onPress: () => router.canGoBack() && router.back(),
-                    },
-                  ]
-                )
-              } else {
-                router.canGoBack() && router.back()
-              }
-            },
+            onPress: handleBackPress,
             iconName: 'arrow-back',
             shouldShow: true,
           },
           middleButton: {
-            onPress: () => {
-              if (!isSaving) {
-                handleSubmit(handleSave)()
-              }
-            },
-            iconName: saveSuccess ? 'checkmark' : 'save',
-            text: getMiddleButtonText(),
+            onPress: () => !isSaving && handleSubmit(handleSave)(),
+            iconName: isSaving ? 'hourglass' : isDirty ? 'save' : 'close',
+            text: getButtonText(),
             shouldShow: true,
-            backgroundColor: getMiddleButtonColor(),
-            // Change text color to white when button is active
-            textColor:
-              isDirty || isSaving || saveSuccess
-                ? 'white'
-                : theme.colors.surface,
-            iconColor:
-              isDirty || isSaving || saveSuccess
-                ? 'white'
-                : theme.colors.surface,
+            backgroundColor: getButtonColor(),
+            textColor: isDirty || isSaving ? 'white' : theme.colors.surface,
+            iconColor: isDirty || isSaving ? 'white' : theme.colors.surface,
           },
           rightButton: {
             onPress: handleReset,
             iconName: 'refresh',
-            shouldShow: isDirty,
+            shouldShow: isDirty && !isSaving,
           },
         }}
       />

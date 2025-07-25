@@ -118,12 +118,16 @@ const translations = {
 
     'settings.profile': 'Profil og personlige opplysninger',
     'settings.profile.subtitle': 'Rediger profil og personlige opplysninger',
-    'settings.profile.display_name_required': 'Visningsnavn er påkrevd',
     'settings.profile.display_name': 'Visningsnavn',
     'settings.profile.bio': 'Bio',
     'settings.profile.bio_placeholder': 'Fortell litt om deg selv...',
     'settings.profile.location': 'Full adresse',
     'settings.profile.location.example': 'Oslo, Norge',
+    'settings.update.success': 'Innstillinger oppdatert!',
+
+    'settings.profile.form.display_name': 'Visningsnavn er påkrevd',
+    'settings.profile.form.bio': 'Bio må være mindre enn 500 tegn',
+    'settings.profile.form.location': 'Sted må være mindre enn 100 tegn',
 
     'settings.preferences': 'Matpreferanser',
     'settings.preferences.subtitle': 'Kosthold, allergier og favorittkjøkken',
@@ -341,12 +345,17 @@ const translations = {
 
     'settings.profile': 'Profile and Personal Information',
     'settings.profile.subtitle': 'Edit profile and personal information',
-    'settings.profile.display_name_required': 'Display name is required',
     'settings.profile.display_name': 'Display Name',
     'settings.profile.bio': 'Bio',
     'settings.profile.bio_placeholder': 'Tell us about yourself...',
     'settings.profile.location': 'Full address',
     'settings.profile.location.example': 'Oslo, Norway',
+    'settings.update.success': 'Settings updated successfully!',
+
+    'settings.profile.form.display_name': 'Display name is required',
+    'settings.profile.form.bio': 'Bio must be less than 500 characters',
+    'settings.profile.form.location':
+      'Location must be less than 100 characters',
 
     'settings.preferences': 'Food Preferences',
     'settings.preferences.subtitle': 'Diet, allergies, and favorite cuisines',
