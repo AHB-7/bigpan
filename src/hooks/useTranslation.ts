@@ -122,7 +122,7 @@ const translations = {
     'settings.profile.display_name': 'Visningsnavn',
     'settings.profile.bio': 'Bio',
     'settings.profile.bio_placeholder': 'Fortell litt om deg selv...',
-    'settings.profile.location': 'Sted',
+    'settings.profile.location': 'Full adresse',
     'settings.profile.location.example': 'Oslo, Norge',
 
     'settings.preferences': 'Matpreferanser',
@@ -345,7 +345,7 @@ const translations = {
     'settings.profile.display_name': 'Display Name',
     'settings.profile.bio': 'Bio',
     'settings.profile.bio_placeholder': 'Tell us about yourself...',
-    'settings.profile.location': 'Location',
+    'settings.profile.location': 'Full address',
     'settings.profile.location.example': 'Oslo, Norway',
 
     'settings.preferences': 'Food Preferences',

@@ -40,15 +40,10 @@ export const useAuthStore = create<AuthStore>()(
 
       // Actions
       setSession: (session) => {
-        console.log('setSession called:', {
-          hasSession: !!session,
-          sessionId: session?.user?.id,
-        })
-
         set({
           session,
           user: session?.user || null,
-          userId: session?.user?.id || null, // ✅ Set userId directly
+          userId: session?.user?.id || null,
         })
       },
 

@@ -109,8 +109,9 @@ export const styles = StyleSheet.create({
   logoutContainer: {
     paddingVertical: theme.spacing.md,
     borderWidth: 1,
-    borderColor: theme.colors.error + '30',
-    marginBottom: theme.spacing.xxl,
+    backgroundColor: theme.colors.onBackground + '10',
+    borderColor: theme.colors.onBackground + '20',
+    marginBottom: 100,
   },
 
   logoutIconContainer: {
@@ -118,7 +119,7 @@ export const styles = StyleSheet.create({
   },
 
   logoutIcon: {
-    color: theme.colors.error,
+    color: theme.colors.error + '80',
   },
 
   logoutText: {

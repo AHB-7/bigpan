@@ -82,7 +82,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <>
           <TouchableOpacity
             style={styles.settingIconContainer}
-            onPress={() => router.push('/(modals)/settings')}
+            onPress={() => router.push('/(main)/settings')}
           >
             <Ionicons name="settings" style={styles.settingIcon} />
           </TouchableOpacity>

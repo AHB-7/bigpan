@@ -1,4 +1,4 @@
-// app/(modals)/settings.tsx - Clean version using new hooks
+// src/components/profile/settings/Profile.tsx - Enhanced with dynamic NavBar
 import React, { useState, useEffect } from 'react'
 import { View, ScrollView, Switch, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -7,10 +7,10 @@ import { Text, Button, Input } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
 import { theme } from '@/styles/theme'
 import { Controller, useForm } from 'react-hook-form'
-import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAsyncFunction } from '@/hooks/asyncFunction'
 import { supabase } from '@/services/supabase/client'
+import { NavBar } from '@/components/nav/NavBar'
 
 interface UserInfoProps {
   // Profile fields
@@ -35,9 +35,13 @@ interface UserInfoProps {
 export function Profile() {
   const { user, preferences, updateProfile, updatePreferences } = useAuth()
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const { t } = useTranslation()
   const [profileData, setProfileData] = useState<any>(null)
+  const [originalValues, setOriginalValues] = useState<UserInfoProps | null>(
+    null
+  )
   const { executeSupabase } = useAsyncFunction()
 
   const {
@@ -45,7 +49,7 @@ export function Profile() {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<UserInfoProps>({
     defaultValues: {
       // Profile defaults
@@ -94,12 +98,12 @@ export function Profile() {
   // Update the form reset useEffect
   useEffect(() => {
     if (profileData || preferences) {
-      reset({
+      const formValues: UserInfoProps = {
         // Use profileData instead of user_metadata
         display_name: profileData?.display_name || '',
         bio: profileData?.bio || '',
         cooking_level: profileData?.cooking_level || 'beginner',
-        location: profileData?.location,
+        location: profileData?.location || '',
 
         // Preference data from preferences
         cooking_time_preference: preferences?.cooking_time_preference || 60,
@@ -109,13 +113,19 @@ export function Profile() {
         // Simple notification preferences
         email_notifications: true,
         push_notifications: true,
-      })
+        sms_notifications: false,
+        dark_mode: false,
+      }
+
+      reset(formValues)
+      setOriginalValues(formValues) // Store original values for reset
     }
   }, [profileData, preferences, reset])
 
-  const onSubmit = async (data: UserInfoProps) => {
+  const handleSave = async (data: UserInfoProps) => {
     setError('')
-    setIsLoading(true)
+    setIsSaving(true)
+    setSaveSuccess(false)
 
     try {
       const profileResult = await updateProfile({
@@ -124,13 +134,24 @@ export function Profile() {
         cooking_level: data.cooking_level,
         location: data.location,
       })
+
       const preferencesResult = await updatePreferences({
         cooking_time_preference: data.cooking_time_preference,
         serving_size_preference: data.serving_size_preference,
         budget_preference: data.budget_preference,
       })
+
       if (profileResult.success && preferencesResult.success) {
-        router.back()
+        setSaveSuccess(true)
+
+        // Reset form state to mark as clean
+        reset(data)
+        setOriginalValues(data)
+
+        // Show success for a moment, then navigate back
+        setTimeout(() => {
+          router.back()
+        }, 1000)
       } else {
         setError(
           preferencesResult.error || 'Kunne ikke oppdatere innstillinger'
@@ -139,26 +160,89 @@ export function Profile() {
     } catch (error: any) {
       setError(error.message || 'En feil oppstod')
     } finally {
-      setIsLoading(false)
+      setIsSaving(false)
     }
   }
+
+  const handleReset = () => {
+    if (originalValues) {
+      reset(originalValues)
+      setError('')
+      setSaveSuccess(false)
+    }
+  }
+
+  // Get dynamic colors based on form state
+  const getMiddleButtonColor = () => {
+    if (isSaving) return theme.colors.primary
+    if (saveSuccess) return theme.colors.success
+    if (isDirty) return theme.colors.primary
+    return theme.colors.onBackground
+  }
+
+  const getMiddleButtonText = () => {
+    if (isSaving) return 'Lagrer...'
+    if (saveSuccess) return 'Lagret!'
+    return t('settings.save')
+  }
+
   useEffect(() => {
-    console.log('user', user)
-    console.log('preferences', preferences)
-  }, [user, preferences])
+    console.log('Form state:', {
+      isDirty,
+      isSaving,
+      saveSuccess,
+      buttonColor: getMiddleButtonColor(),
+    })
+  }, [isDirty, isSaving, saveSuccess])
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <ScrollView style={{ flex: 1, padding: theme.spacing.md }}>
         {/* Profile Section */}
-        <View style={{ marginBottom: theme.spacing.xl }}>
-          <Text
-            variant="heading3"
-            weight="semiBold"
-            style={{ marginBottom: theme.spacing.md }}
+        <View>
+          <View
+            style={{
+              borderLeftColor: theme.colors.primary,
+              borderLeftWidth: 12,
+              marginTop: theme.spacing.xxl,
+              marginBottom: theme.spacing.xl,
+              paddingLeft: theme.spacing.md,
+            }}
           >
-            {t('settings.profile')}
-          </Text>
+            <Text variant="heading2" weight="semiBold">
+              {t('settings.profile')}
+            </Text>
+          </View>
+
+          {/* Error display */}
+          {error && (
+            <View
+              style={{
+                backgroundColor: theme.colors.error + '15',
+                padding: theme.spacing.md,
+                borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <Text style={{ color: theme.colors.error }}>{error}</Text>
+            </View>
+          )}
+
+          {/* Success display */}
+          {saveSuccess && (
+            <View
+              style={{
+                backgroundColor: theme.colors.success + '15',
+                padding: theme.spacing.md,
+                borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              <Text style={{ color: theme.colors.success }}>
+                ✅ Innstillinger oppdatert!
+              </Text>
+            </View>
+          )}
 
           <Controller
             control={control}
@@ -198,6 +282,20 @@ export function Profile() {
 
           <Controller
             control={control}
+            name="location"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                label={t('settings.profile.location')}
+                placeholder={t('settings.profile.location.example')}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
             name="cooking_level"
             render={({ field: { onChange, value } }) => (
               <View style={{ marginBottom: theme.spacing.md }}>
@@ -212,7 +310,7 @@ export function Profile() {
                 >
                   Kokkenivå
                 </Text>
-                <View style={{ gap: theme.spacing.sm }}>
+                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
                   {[
                     { value: 'beginner', label: 'Nybegynner' },
                     { value: 'intermediate', label: 'Øvet' },
@@ -222,6 +320,7 @@ export function Profile() {
                       key={level.value}
                       variant={value === level.value ? 'filled' : 'outlined'}
                       onPress={() => onChange(level.value)}
+                      textVariant="caption"
                       style={{ flex: 1 }}
                     >
                       {level.label}
@@ -231,30 +330,60 @@ export function Profile() {
               </View>
             )}
           />
-
-          <Controller
-            control={control}
-            name="location"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label={t('settings.profile.location')}
-                placeholder={t('settings.profile.location.example')}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-              />
-            )}
-          />
         </View>
-        <Button
-          variant="filled"
-          onPress={handleSubmit(onSubmit)}
-          loading={isLoading}
-          style={{ marginBottom: theme.spacing.md }}
-        >
-          {t('settings.save')}
-        </Button>
       </ScrollView>
+
+      <NavBar
+        config={{
+          leftButton: {
+            onPress: () => {
+              if (isDirty) {
+                Alert.alert(
+                  'Ulagrede endringer',
+                  'Du har ulagrede endringer. Er du sikker på at du vil gå tilbake?',
+                  [
+                    { text: 'Avbryt', style: 'cancel' },
+                    {
+                      text: 'Gå tilbake',
+                      style: 'destructive',
+                      onPress: () => router.canGoBack() && router.back(),
+                    },
+                  ]
+                )
+              } else {
+                router.canGoBack() && router.back()
+              }
+            },
+            iconName: 'arrow-back',
+            shouldShow: true,
+          },
+          middleButton: {
+            onPress: () => {
+              if (!isSaving) {
+                handleSubmit(handleSave)()
+              }
+            },
+            iconName: saveSuccess ? 'checkmark' : 'save',
+            text: getMiddleButtonText(),
+            shouldShow: true,
+            backgroundColor: getMiddleButtonColor(),
+            // Change text color to white when button is active
+            textColor:
+              isDirty || isSaving || saveSuccess
+                ? 'white'
+                : theme.colors.surface,
+            iconColor:
+              isDirty || isSaving || saveSuccess
+                ? 'white'
+                : theme.colors.surface,
+          },
+          rightButton: {
+            onPress: handleReset,
+            iconName: 'refresh',
+            shouldShow: isDirty,
+          },
+        }}
+      />
     </SafeAreaView>
   )
 }

@@ -32,6 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   textColor,
+  textVariant,
   backgroundColor,
   translationKey,
   translationParams,
@@ -92,7 +93,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       <Text
-        variant="body"
+        variant={textVariant || 'body'}
         weight="medium"
         style={{ color: textColors[variant], ...textStyle }}
       >

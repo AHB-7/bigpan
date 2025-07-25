@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { TouchableOpacity, View, ScrollView } from 'react-native'
 import { AntDesign, MaterialIcons, Ionicons, Feather } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import { NavBar } from '@/components/nav/NavBar'
+import { navigationConfigs } from '@/components/nav/navConfig'
 
 interface SettingsItemProps {
   icon: React.ReactNode
@@ -79,7 +81,6 @@ export function Settings() {
   const { t } = useTranslation()
   const { user, signOut } = useAuth()
 
-  // Get user initials for avatar
   const getUserInitials = (name?: string) => {
     if (!name) return 'U'
     return name
@@ -92,7 +93,7 @@ export function Settings() {
   const handleSignOut = async () => {
     try {
       await signOut()
-      // Navigation will be handled by auth state change
+      router.push('/(auth)/login')
     } catch (error) {
       console.error('Sign out error:', error)
     }
@@ -118,7 +119,7 @@ export function Settings() {
             title={t('settings.profile')}
             subtitle={t('settings.profile.subtitle')}
             onPress={() => {
-              router.push('/(modals)/settings/account')
+              router.push('/(main)/settings/account')
             }}
           />
 
@@ -219,6 +220,7 @@ export function Settings() {
           isDestructive={true}
         />
       </ScrollView>
+      <NavBar config={navigationConfigs.back} />
     </SafeAreaView>
   )
 }

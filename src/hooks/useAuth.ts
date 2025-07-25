@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts - Single hook for all auth needs
 import { useEffect, useCallback } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { authService } from '@/services/auth'
@@ -86,7 +85,6 @@ export const useAuth = () => {
 
   const signOut = useCallback(async () => {
     return executeSupabase(() => authService.signOut(), {
-      successMessage: 'Goodbye!',
       onSuccess: () => {
         store.clear()
       },
