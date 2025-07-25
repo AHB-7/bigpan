@@ -1,4 +1,4 @@
-import { Profile } from '@/components/profile/settings/Profile'
+import { Profile } from '@/components/main/settings/Profile'
 
 export default function SettingScreen() {
   return (
