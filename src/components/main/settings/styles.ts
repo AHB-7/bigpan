@@ -8,10 +8,12 @@ export const styles = StyleSheet.create({
   },
 
   headerContainer: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: 64,
-    paddingBottom: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    borderLeftColor: theme.colors.primary,
+    borderLeftWidth: 12,
+    marginTop: theme.spacing.xxl,
+    marginBottom: theme.spacing.l,
+    paddingLeft: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
   },
 
   linkssection: {
@@ -39,9 +41,7 @@ export const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
     borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.surface,
-
-    // Improved shadow and border styling
-    borderWidth: 0, // Remove the orange border for cleaner look
+    borderWidth: 0,
     shadowColor: theme.colors.onBackground,
     shadowOffset: {
       width: 0,
@@ -50,17 +50,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-
-    // Add subtle hover/press effects
-    transform: [{ scale: 1 }],
   },
-
-  // Active/pressed state
-  linkContainerPressed: {
-    backgroundColor: theme.colors.surfaceVariant,
-    transform: [{ scale: 1.3 }],
-  },
-
   linkIconContainer: {
     width: 32,
     height: 32,
@@ -98,14 +88,10 @@ export const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.onSurfaceVariant,
   },
-
-  // Chevron arrow for navigation indication
   chevronIcon: {
     fontSize: theme.fontSize.md,
     color: theme.colors.onSurfaceVariant,
   },
-
-  // Special styling for logout button
   logoutContainer: {
     paddingVertical: theme.spacing.md,
     borderWidth: 1,
@@ -113,20 +99,15 @@ export const styles = StyleSheet.create({
     borderColor: theme.colors.onBackground + '20',
     marginBottom: 100,
   },
-
   logoutIconContainer: {
     backgroundColor: theme.colors.error + '15',
   },
-
   logoutIcon: {
     color: theme.colors.error + '80',
   },
-
   logoutText: {
     color: theme.colors.error,
   },
-
-  // Badge for notifications/updates
   badge: {
     position: 'absolute',
     top: -2,
@@ -142,5 +123,21 @@ export const styles = StyleSheet.create({
 
   badgeText: {
     color: theme.colors.surface,
+  },
+
+  //-------------------profile styles-------------------
+  row: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  flex1: {
+    flex: 1,
+  },
+  label: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.onSurface,
+    marginBottom: theme.spacing.xs,
+    marginLeft: theme.spacing.xs,
   },
 })

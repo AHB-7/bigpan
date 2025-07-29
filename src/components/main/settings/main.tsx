@@ -119,7 +119,7 @@ export function Settings() {
             title={t('settings.profile')}
             subtitle={t('settings.profile.subtitle')}
             onPress={() => {
-              router.push('/(main)/settings/profile')
+              router.push('/(main)/settings/profileScreen')
             }}
           />
 
@@ -130,7 +130,7 @@ export function Settings() {
             title={t('settings.preferences')}
             subtitle={t('settings.preferences.subtitle')}
             onPress={() => {
-              router.push('/(main)/settings/preferences')
+              router.push('/(main)/settings/preferencesScreen')
             }}
           />
         </View>

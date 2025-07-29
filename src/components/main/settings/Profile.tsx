@@ -1,4 +1,3 @@
-// src/components/main/settings/Profile.tsx - Optimized with proper hook usage
 import React, { useState, useEffect } from 'react'
 import { View, ScrollView, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -18,38 +17,43 @@ import { useAsyncFunction } from '@/hooks/asyncFunction'
 import { supabase } from '@/services/supabase/client'
 import { NavBar } from '@/components/nav/NavBar'
 import { useProfileForm, ProfileFormData } from '@/schemas/forms'
+import { styles } from './styles'
+import type { User, CookingLevel } from '@/types'
 
 export function Profile() {
   const { user, updateProfile } = useAuth()
   const { t } = useTranslation()
-  const [profileData, setProfileData] = useState<any>(null)
+  const [profileData, setProfileData] = useState<User | null>(null)
   const [profileError, setProfileError] = useState('')
+  const [isMounted, setIsMounted] = useState(false)
 
-  // ✅ Helper function to safely cast cooking level
   const getSafeCookingLevel = (
     level: string | null | undefined
   ): 'beginner' | 'intermediate' | 'advanced' => {
-    if (level && ['beginner', 'intermediate', 'advanced'].includes(level)) {
-      return level as 'beginner' | 'intermediate' | 'advanced'
+    if (
+      level &&
+      (level === 'beginner' || level === 'intermediate' || level === 'advanced')
+    ) {
+      return level
     }
     return 'beginner'
   }
 
-  // ✅ Use useAsyncFunction properly for profile loading
   const { executeSupabase: loadProfileData, isLoading: isLoadingProfile } =
     useAsyncFunction()
 
-  // ✅ Use useAsyncFunction properly for saving
   const { executeSupabase: saveProfile, isLoading: isSaving } =
     useAsyncFunction()
 
-  // ✅ Use your custom profile form hook with all form state
   const { control, handleSubmit, reset, errors, isDirty } = useProfileForm()
+  useEffect(() => {
+    setIsMounted(true)
+    return () => setIsMounted(false)
+  }, [])
 
-  // ✅ Load profile data using useAsyncFunction properly
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user?.id) return
+      if (!user?.id || !isMounted) return
 
       await loadProfileData(
         async () => {
@@ -64,9 +68,9 @@ export function Profile() {
         },
         {
           showErrorMethod: 'inline',
-          onSuccess: (data) => {
-            setProfileData(data)
-            // ✅ Populate form with backend data using helper function
+          onSuccess: (data?: User) => {
+            setProfileData(data || null)
+
             if (data) {
               reset({
                 display_name: data.display_name || '',
@@ -74,19 +78,19 @@ export function Profile() {
                 cooking_level: getSafeCookingLevel(data.cooking_level),
                 location: data.location || '',
               })
-              console.log('Loaded and populated profile data:', data)
             }
           },
-          onShowError: (message) => setProfileError(message),
+          onShowError: (message: string) => setProfileError(message),
           errorMessage: 'Kunne ikke laste profil',
         }
       )
     }
 
-    loadProfile()
-  }, [user?.id])
+    if (isMounted && user?.id) {
+      loadProfile()
+    }
+  }, [user?.id, isMounted])
 
-  // ✅ Use useAsyncFunction for saving with proper error handling
   const handleSave = async (data: ProfileFormData) => {
     const result = await saveProfile(
       () =>
@@ -99,14 +103,19 @@ export function Profile() {
       {
         showErrorMethod: 'toast',
         showSuccessMethod: 'toast',
-        successMessage: '✅ Profil oppdatert!',
+        successMessage: 'Profil oppdatert!',
         errorMessage: 'Kunne ikke oppdatere profil',
         onSuccess: () => {
-          reset(data) // Mark form as clean
-
-          // Navigate back after brief delay
+          reset(data)
           setTimeout(() => {
-            router.back()
+            if (isMounted && router.canGoBack()) {
+              try {
+                router.back()
+              } catch (error) {
+                console.warn('Navigation error:', error)
+                router.replace('/(tabs)/')
+              }
+            }
           }, 800)
         },
       }
@@ -120,7 +129,6 @@ export function Profile() {
     setProfileError('')
   }
 
-  // ✅ Simplified button state management
   const getButtonColor = () => {
     if (isSaving) return theme.colors.primary
     if (isDirty) return theme.colors.primary
@@ -129,65 +137,48 @@ export function Profile() {
 
   const getButtonText = () => {
     if (isSaving) return 'Lagrer...'
-    if (!isDirty) return 'Lukk' // ✅ Show "Close" when no changes
+    if (!isDirty) return 'Lukk'
     return t('settings.save')
   }
 
-  // ✅ Show loading state while profile is loading
+  const handleNavigation = (callback: () => void) => {
+    if (!isMounted) return
+
+    try {
+      callback()
+    } catch (error) {
+      console.warn('Navigation error:', error)
+      router.replace('/(tabs)/')
+    }
+  }
+
   if (isLoadingProfile) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: theme.colors.background }}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: theme.spacing.lg,
-          }}
-        >
-          <LoadingSpinner />
-          <Text variant="body" style={{ marginTop: theme.spacing.md }}>
-            Laster profil...
-          </Text>
-        </View>
+      <SafeAreaView style={styles.container}>
+        <LoadingSpinner />
+        <Text variant="body">Laster profil data...</Text>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <ScrollView style={{ flex: 1, padding: theme.spacing.md }}>
-        {/* Header */}
-        <View
-          style={{
-            borderLeftColor: theme.colors.primary,
-            borderLeftWidth: 12,
-            marginTop: theme.spacing.xxl,
-            marginBottom: theme.spacing.xl,
-            paddingLeft: theme.spacing.md,
-          }}
-        >
-          <Text variant="heading2" weight="semiBold">
-            {t('settings.profile')}
-          </Text>
-        </View>
-
-        {/* ✅ Use InlineError component for profile loading errors */}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text variant="heading2" weight="semiBold">
+          {t('settings.profile')}
+        </Text>
+      </View>
+      <ScrollView style={styles.linkssection}>
         {profileError && <InlineError message={profileError} />}
 
-        {/* ✅ Simplified form fields with schema validation */}
         <Controller
           control={control}
           name="display_name"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label={t('settings.profile.display_name')}
-              placeholder={
-                profileData?.display_name || t('settings.profile.display_name')
-              }
-              value={value}
+              placeholder={t('settings.profile.display_name')}
+              value={value || profileData?.display_name || ''}
               onChangeText={onChange}
               onBlur={onBlur}
               error={errors.display_name?.message}
@@ -202,10 +193,8 @@ export function Profile() {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label={t('settings.profile.bio')}
-              placeholder={
-                profileData?.bio || t('settings.profile.bio_placeholder')
-              }
-              value={value}
+              placeholder={t('settings.profile.bio_placeholder')}
+              value={value || profileData?.bio || ''}
               onChangeText={onChange}
               onBlur={onBlur}
               error={errors.bio?.message}
@@ -221,10 +210,8 @@ export function Profile() {
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
               label={t('settings.profile.location')}
-              placeholder={
-                profileData?.location || t('settings.profile.location.example')
-              }
-              value={value}
+              placeholder={t('settings.profile.location.example')}
+              value={value || profileData?.location || ''}
               onChangeText={onChange}
               onBlur={onBlur}
               error={errors.location?.message}
@@ -235,45 +222,46 @@ export function Profile() {
         <Controller
           control={control}
           name="cooking_level"
-          render={({ field: { onChange, value } }) => (
-            <View style={{ marginBottom: theme.spacing.md }}>
-              <Text
-                style={{
-                  fontSize: theme.fontSize.sm,
-                  fontWeight: theme.fontWeight.medium,
-                  color: theme.colors.onSurface,
-                  marginBottom: theme.spacing.xs,
-                  marginLeft: theme.spacing.xs,
-                }}
-              >
-                {t('profile.cooking.level')}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                {[
-                  { value: 'beginner', label: t('cooking.level.beginner') },
-                  {
-                    value: 'intermediate',
-                    label: t('cooking.level.intermediate'),
-                  },
-                  { value: 'advanced', label: t('cooking.level.advanced') },
-                ].map((level) => (
-                  <Button
-                    key={level.value}
-                    variant={value === level.value ? 'filled' : 'outlined'}
-                    onPress={() => onChange(level.value)}
-                    textVariant="caption"
-                    style={{ flex: 1 }}
-                  >
-                    {level.label}
-                  </Button>
-                ))}
+          render={({ field: { onChange, value } }) => {
+            const currentValue =
+              value || getSafeCookingLevel(profileData?.cooking_level)
+            return (
+              <View style={styles.settingsGroup}>
+                <Text style={styles.label}>{t('profile.cooking.level')}</Text>
+                <View style={styles.row}>
+                  {[
+                    {
+                      value: 'beginner' as const,
+                      label: t('cooking.level.beginner'),
+                    },
+                    {
+                      value: 'intermediate' as const,
+                      label: t('cooking.level.intermediate'),
+                    },
+                    {
+                      value: 'advanced' as const,
+                      label: t('cooking.level.advanced'),
+                    },
+                  ].map((level) => (
+                    <Button
+                      key={level.value}
+                      variant={
+                        currentValue === level.value ? 'filled' : 'outlined'
+                      }
+                      onPress={() => onChange(level.value)}
+                      textVariant="caption"
+                      style={styles.flex1}
+                    >
+                      {level.label}
+                    </Button>
+                  ))}
+                </View>
               </View>
-            </View>
-          )}
+            )
+          }}
         />
       </ScrollView>
 
-      {/* ✅ Enhanced Navigation Bar with better loading states */}
       <NavBar
         config={{
           leftButton: {
@@ -287,12 +275,21 @@ export function Profile() {
                     {
                       text: 'Gå tilbake',
                       style: 'destructive',
-                      onPress: () => router.canGoBack() && router.back(),
+                      onPress: () =>
+                        handleNavigation(() => {
+                          if (router.canGoBack()) {
+                            router.back()
+                          }
+                        }),
                     },
                   ]
                 )
               } else if (!isSaving) {
-                router.canGoBack() && router.back()
+                handleNavigation(() => {
+                  if (router.canGoBack()) {
+                    router.back()
+                  }
+                })
               }
             },
             iconName: 'arrow-back',
@@ -300,9 +297,15 @@ export function Profile() {
           },
           middleButton: {
             onPress: () => {
-              !isSaving && isDirty
-                ? handleSubmit(handleSave)()
-                : router.canGoBack() && router.back()
+              if (!isSaving && isDirty) {
+                handleSubmit(handleSave)()
+              } else {
+                handleNavigation(() => {
+                  if (router.canGoBack()) {
+                    router.back()
+                  }
+                })
+              }
             },
             iconName: isSaving ? 'hourglass' : isDirty ? 'save' : 'close',
             text: getButtonText(),

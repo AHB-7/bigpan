@@ -1,4 +1,3 @@
-// src/components/main/settings/Preferences.tsx
 import React, { useState, useEffect } from 'react'
 import { View, ScrollView, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -12,94 +11,117 @@ import { useAsyncFunction } from '@/hooks/asyncFunction'
 import { NavBar } from '@/components/nav/NavBar'
 import { usePreferencesForm, PreferencesFormData } from '@/schemas/forms'
 import type { UpdateUserPreferencesData } from '@/types'
+import { styles } from './styles'
 
+// Type guards and constants
 const isValidBudgetPreference = (
   value: string | null | undefined
 ): value is 'low' | 'medium' | 'high' => {
   return value === 'low' || value === 'medium' || value === 'high'
 }
 
-const COOKING_TIMES = [15, 30, 45, 60, 90]
-const SERVING_SIZES = [1, 2, 4, 6, 8]
-const BUDGET_OPTIONS = [
-  { value: 'low' as const, label: 'Lavt', icon: '' },
-  { value: 'medium' as const, label: 'Medium', icon: '' },
-  { value: 'high' as const, label: 'Høyt', icon: '' },
-]
+const PREFERENCE_OPTIONS = {
+  cookingTimes: [15, 30, 45, 60, 90],
+  servingSizes: [1, 2, 4, 6, 8],
+  budget: [
+    { value: 'low' as const, label: 'Lavt', icon: '' },
+    { value: 'medium' as const, label: 'Medium', icon: '' },
+    { value: 'high' as const, label: 'Høyt', icon: '' },
+  ],
+} as const
+
+const DEFAULT_VALUES = {
+  cookingTime: 60,
+  servingSize: 2,
+  budget: 'medium' as const,
+} as const
+
+// Reusable components
+interface PreferenceButtonGroupProps<T> {
+  value: T
+  options: readonly T[] | readonly { value: T; label: string; icon?: string }[]
+  onChange: (value: T) => void
+  formatLabel?: (value: T) => string
+}
+
+function PreferenceButtonGroup<T extends string | number>({
+  value,
+  options,
+  onChange,
+  formatLabel,
+}: PreferenceButtonGroupProps<T>) {
+  return (
+    <View style={styles.row}>
+      {options.map((option) => {
+        const optionValue = typeof option === 'object' ? option.value : option
+        const optionLabel =
+          typeof option === 'object'
+            ? `${option.icon} ${option.label}`.trim()
+            : formatLabel
+              ? formatLabel(option)
+              : String(option)
+
+        return (
+          <Button
+            key={String(optionValue)}
+            variant={value === optionValue ? 'filled' : 'outlined'}
+            onPress={() => onChange(optionValue)}
+            style={styles.flex1}
+            textVariant="body"
+          >
+            {optionLabel}
+          </Button>
+        )
+      })}
+    </View>
+  )
+}
+
+interface PreferenceGroupProps {
+  title: string
+  children: React.ReactNode
+}
+
+function PreferenceGroup({ title, children }: PreferenceGroupProps) {
+  return (
+    <View style={styles.settingsGroup}>
+      <Text style={styles.label}>{title}</Text>
+      {children}
+    </View>
+  )
+}
 
 export function Preferences() {
   const { preferences, updatePreferences } = useAuth()
   const { t } = useTranslation()
   const [preferencesError, setPreferencesError] = useState('')
-
   const { executeSupabase: savePreferences, isLoading: isSaving } =
     useAsyncFunction()
   const { control, handleSubmit, reset, isDirty } = usePreferencesForm()
 
-  useEffect(() => {
-    if (preferences) {
-      const budgetPreference = isValidBudgetPreference(
-        preferences.budget_preference
-      )
-        ? preferences.budget_preference
-        : 'medium'
+  // Helper functions
+  const getSafeBudgetPreference = (value: string | null | undefined) =>
+    isValidBudgetPreference(value) ? value : DEFAULT_VALUES.budget
 
-      reset({
-        cooking_time_preference: preferences.cooking_time_preference || 60,
-        serving_size_preference: preferences.serving_size_preference || 2,
-        budget_preference: budgetPreference,
-      })
-    }
-  }, [preferences, reset])
+  const getDefaultFormData = () => ({
+    cooking_time_preference:
+      preferences?.cooking_time_preference || DEFAULT_VALUES.cookingTime,
+    serving_size_preference:
+      preferences?.serving_size_preference || DEFAULT_VALUES.servingSize,
+    budget_preference: getSafeBudgetPreference(preferences?.budget_preference),
+  })
 
-  const handleSave = async (data: PreferencesFormData) => {
-    if (!isDirty) {
-      router.back()
-      return { success: true }
-    }
-
-    const currentBudgetPreference = isValidBudgetPreference(
-      preferences?.budget_preference
+  const hasActualChanges = (data: PreferencesFormData) => {
+    const defaults = getDefaultFormData()
+    return Object.keys(data).some(
+      (key) =>
+        data[key as keyof PreferencesFormData] !==
+        defaults[key as keyof typeof defaults]
     )
-      ? preferences.budget_preference
-      : 'medium'
-
-    const hasActualChanges =
-      data.cooking_time_preference !==
-        (preferences?.cooking_time_preference || 60) ||
-      data.serving_size_preference !==
-        (preferences?.serving_size_preference || 2) ||
-      data.budget_preference !== currentBudgetPreference
-
-    if (!hasActualChanges) {
-      router.back()
-      return { success: true }
-    }
-
-    const result = await savePreferences(
-      () => updatePreferences(data as UpdateUserPreferencesData),
-      {
-        showErrorMethod: 'toast',
-        showSuccessMethod: 'toast',
-        successMessage: '✅ Preferanser oppdatert!',
-        errorMessage: 'Kunne ikke oppdatere preferanser',
-        onSuccess: () => {
-          reset(data)
-          setTimeout(() => router.back(), 800)
-        },
-      }
-    )
-
-    return result
   }
 
-  const handleReset = () => {
-    reset()
-    setPreferencesError('')
-  }
-
-  const handleBackPress = () => {
-    if (isDirty && !isSaving) {
+  const handleNavigation = (showAlert = false) => {
+    if (showAlert && isDirty && !isSaving) {
       Alert.alert(
         'Ulagrede endringer',
         'Du har ulagrede endringer. Er du sikker på at du vil gå tilbake?',
@@ -112,189 +134,130 @@ export function Preferences() {
           },
         ]
       )
-    } else if (!isSaving) {
-      router.canGoBack() && router.back()
+    } else if (!isSaving && router.canGoBack()) {
+      router.back()
     }
   }
 
-  const getButtonColor = () => {
-    if (isSaving || isDirty) return theme.colors.primary
-    return theme.colors.onBackground
+  const getButtonState = () => {
+    if (isSaving) return { color: theme.colors.primary, text: 'Lagrer...' }
+    if (!isDirty) return { color: theme.colors.onBackground, text: 'Lukk' }
+    return { color: theme.colors.primary, text: t('settings.save') }
   }
 
-  const getButtonText = () => {
-    if (isSaving) return 'Lagrer...'
-    if (!isDirty) return 'Lukk'
-    return t('settings.save')
+  // Effects
+  useEffect(() => {
+    if (preferences) {
+      reset(getDefaultFormData())
+    }
+  }, [preferences, reset])
+
+  // Event handlers
+  const handleSave = async (data: PreferencesFormData) => {
+    if (!isDirty || !hasActualChanges(data)) {
+      handleNavigation()
+      return { success: true }
+    }
+
+    const result = await savePreferences(
+      () => updatePreferences(data as UpdateUserPreferencesData),
+      {
+        showErrorMethod: 'toast',
+        showSuccessMethod: 'toast',
+        successMessage: t('settings.preferences.successMessage' as any),
+        errorMessage: t('settings.preferences.errorMessage' as any),
+        onSuccess: () => {
+          reset(data)
+          setTimeout(() => handleNavigation(), 800)
+        },
+      }
+    )
+
+    return result
+  }
+
+  const handleReset = () => {
+    reset()
+    setPreferencesError('')
   }
 
   if (!preferences) {
     return (
-      <SafeAreaView
-        style={{ flex: 1, backgroundColor: theme.colors.background }}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: theme.spacing.lg,
-          }}
-        >
-          <LoadingSpinner />
-          <Text variant="body" style={{ marginTop: theme.spacing.md }}>
-            Laster preferanser...
-          </Text>
-        </View>
+      <SafeAreaView style={styles.container}>
+        <LoadingSpinner />
+        <Text variant="body">{t('settings.preferences.loading')}</Text>
       </SafeAreaView>
     )
   }
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <ScrollView style={{ flex: 1, padding: theme.spacing.md }}>
-        {/* Header */}
-        <View
-          style={{
-            borderLeftColor: theme.colors.primary,
-            borderLeftWidth: 12,
-            marginTop: theme.spacing.xxl,
-            marginBottom: theme.spacing.xl,
-            paddingLeft: theme.spacing.md,
-          }}
-        >
-          <Text variant="heading2" weight="semiBold">
-            {t('settings.preferences')}
-          </Text>
-        </View>
+  const buttonState = getButtonState()
 
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text variant="heading2" weight="semiBold">
+          {t('settings.preferences')}
+        </Text>
+      </View>
+
+      <ScrollView style={styles.linkssection}>
         {preferencesError && <InlineError message={preferencesError} />}
 
-        {/* Cooking Preferences */}
-        <View style={{ marginBottom: theme.spacing.xl }}>
-          <Text
-            variant="heading3"
-            weight="semiBold"
-            style={{ marginBottom: theme.spacing.md }}
-          >
-            🍳 Kokkepreferanser
-          </Text>
-
-          {/* Cooking Time */}
+        <View style={styles.settingsGroup}>
           <Controller
             control={control}
             name="cooking_time_preference"
             render={({ field: { onChange, value } }) => (
-              <View style={{ marginBottom: theme.spacing.md }}>
-                <Text
-                  style={{
-                    fontSize: theme.fontSize.sm,
-                    fontWeight: theme.fontWeight.medium,
-                    color: theme.colors.onSurface,
-                    marginBottom: theme.spacing.xs,
-                  }}
-                >
-                  Ønsket koketid: {value} minutter
-                </Text>
-                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                  {COOKING_TIMES.map((time) => (
-                    <Button
-                      key={time}
-                      variant={value === time ? 'filled' : 'outlined'}
-                      onPress={() => onChange(time)}
-                      style={{ padding: theme.spacing.xs }}
-                      textVariant="caption"
-                    >
-                      {time}m
-                    </Button>
-                  ))}
-                </View>
-              </View>
+              <PreferenceGroup title={t('settings.preferences.cooking_time')}>
+                <PreferenceButtonGroup
+                  value={value}
+                  options={PREFERENCE_OPTIONS.cookingTimes}
+                  onChange={onChange}
+                  formatLabel={(time) => `${time}`}
+                />
+              </PreferenceGroup>
             )}
           />
 
-          {/* Serving Size */}
           <Controller
             control={control}
             name="serving_size_preference"
             render={({ field: { onChange, value } }) => (
-              <View style={{ marginBottom: theme.spacing.md }}>
-                <Text
-                  style={{
-                    fontSize: theme.fontSize.sm,
-                    fontWeight: theme.fontWeight.medium,
-                    color: theme.colors.onSurface,
-                    marginBottom: theme.spacing.xs,
-                  }}
-                >
-                  Standard porsjoner: {value} personer
-                </Text>
-                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                  {SERVING_SIZES.map((size) => (
-                    <Button
-                      key={size}
-                      variant={value === size ? 'filled' : 'outlined'}
-                      onPress={() => onChange(size)}
-                      style={{ flex: 1 }}
-                      textVariant="caption"
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                </View>
-              </View>
+              <PreferenceGroup title={t('settings.preferences.serving_size')}>
+                <PreferenceButtonGroup
+                  value={value}
+                  options={PREFERENCE_OPTIONS.servingSizes}
+                  onChange={onChange}
+                />
+              </PreferenceGroup>
             )}
           />
 
-          {/* Budget Preference */}
           <Controller
             control={control}
             name="budget_preference"
             render={({ field: { onChange, value } }) => (
-              <View style={{ marginBottom: theme.spacing.md }}>
-                <Text
-                  style={{
-                    fontSize: theme.fontSize.sm,
-                    fontWeight: theme.fontWeight.medium,
-                    color: theme.colors.onSurface,
-                    marginBottom: theme.spacing.xs,
-                  }}
-                >
-                  Budsjettpreferanse
-                </Text>
-                <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-                  {BUDGET_OPTIONS.map((budget) => (
-                    <Button
-                      key={budget.value}
-                      variant={value === budget.value ? 'filled' : 'outlined'}
-                      onPress={() => onChange(budget.value)}
-                      style={{ flex: 1 }}
-                      textVariant="caption"
-                    >
-                      {budget.icon} {budget.label}
-                    </Button>
-                  ))}
-                </View>
-              </View>
+              <PreferenceGroup title={t('settings.preferences.budget')}>
+                <PreferenceButtonGroup
+                  value={value}
+                  options={PREFERENCE_OPTIONS.budget}
+                  onChange={onChange}
+                />
+              </PreferenceGroup>
             )}
           />
         </View>
 
-        {/* Quick Actions */}
-        <View style={{ marginBottom: theme.spacing.xl }}>
-          <Text
-            variant="heading3"
-            weight="semiBold"
-            style={{ marginBottom: theme.spacing.md }}
-          >
-            ⚡ Hurtigvalg
+        <View style={styles.settingsGroup}>
+          <Text variant="heading3" weight="semiBold" style={styles.groupTitle}>
+            {t('settings.preferences.mainBtn')}
           </Text>
           <Button
             onPress={() => router.push('/(auth)/onboarding')}
             variant="outlined"
-            style={{ marginBottom: theme.spacing.md }}
+            style={styles.flex1}
           >
-            ✏️ Rediger matpreferanser og allergier
+            {t('settings.preferences.mainBtn')}
           </Button>
         </View>
       </ScrollView>
@@ -302,16 +265,16 @@ export function Preferences() {
       <NavBar
         config={{
           leftButton: {
-            onPress: handleBackPress,
+            onPress: () => handleNavigation(true),
             iconName: 'arrow-back',
             shouldShow: true,
           },
           middleButton: {
             onPress: () => !isSaving && handleSubmit(handleSave)(),
             iconName: isSaving ? 'hourglass' : isDirty ? 'save' : 'close',
-            text: getButtonText(),
+            text: buttonState.text,
             shouldShow: true,
-            backgroundColor: getButtonColor(),
+            backgroundColor: buttonState.color,
             textColor: isDirty || isSaving ? 'white' : theme.colors.surface,
             iconColor: isDirty || isSaving ? 'white' : theme.colors.surface,
           },

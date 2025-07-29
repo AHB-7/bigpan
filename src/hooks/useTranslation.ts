@@ -153,6 +153,13 @@ const translations = {
     'settings.save': 'Lagre innstillinger',
     'settings.logout': 'Logg ut',
 
+    // Preferences
+    'settings.preferences.loading': 'Laster preferanser...',
+    'settings.preferences.cooking_time': 'Koketid',
+    'settings.preferences.serving_size': 'Porsjonsstørrelse',
+    'settings.preferences.budget': 'Budsjett',
+    'settings.preferences.mainBtn': 'Preferanser og allergier',
+
     // Meal Planning
     'meal.planning.title': 'Måltidsplanlegging',
     'meal.planning.week': 'Uke',
@@ -380,6 +387,15 @@ const translations = {
 
     'settings.save': 'Save Settings',
     'settings.logout': 'Sign Out',
+
+    // Preferences
+    'settings.preferences.cooking_time': 'Cooking Time',
+    'settings.preferences.loading': 'Loading preferences...',
+    'settings.preferences.serving_size': 'Serving Size',
+    'settings.preferences.budget': 'Budget',
+    'settings.preferences.mainBtn': 'Preferences and Allergies',
+    'settings.preferences.successMessage': 'Preferences updated successfully!',
+    'settings.preferences.errorMessage': 'Failed to update preferences',
 
     // Meal Planning
     'meal.planning.title': 'Meal Planning',
